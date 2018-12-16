@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class NeuronUnit : MonoBehaviour
@@ -7,28 +8,48 @@ public class NeuronUnit : MonoBehaviour
 
 	public float	limit;
 
-	(NeuronUnit n, float ratio)[]	forwardLinks;
+	(NeuronUnit n, float v)[]	forwardLinks;
 
 
-    // Start is called before the first frame update
+	public Zone	selfZone;
+	public Zone	outZone;
+	
+
+
+	public void Spark( float v )
+	{
+		if( v >)
+
+		foreach( var node in forwardLinks )
+		{
+			if( node.v )
+		}
+	}
+	public void 
+
+	
     void Start()
     {
         var tf	= this.transform;
-		tf.position = Random.insideUnitSphere * 100.0f;
+
+		setPosition();
+		setLinks();
+		
+		return;
 
 		void setPosition()
 		{
-
+			tf.position = selfZone.Tf.position + Random.insideUnitSphere * selfZone.Radius;
 		}
+
 		void setLinks()
 		{
-
+			this.forwardLinks = Physics
+				.OverlapSphere( tf.position, selfZone.linkRadius )
+				.Select( x => (x.GetComponent<NeuronUnit>(), 0.0f) )
+				.ToArray()
+				;
 		}
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+	
 }
