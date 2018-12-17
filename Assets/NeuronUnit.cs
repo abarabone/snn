@@ -11,9 +11,9 @@ public class NeuronUnit : MonoBehaviour
 	[SerializeField]
 	(NeuronUnit n, float v)[]	forwardLinks;
 
-	Zone zone;
+	[HideInInspector]
+	public Zone ParentZone;
 
-	Vector3	forward;// 軸索の方向、あとで入れるかも（それぞれが一番近い出力ゾーンに向かう、でいいかな？遠い場合は平均？）
 	Vector3	linkerCenter;
 	Vector3	position;
 
@@ -49,22 +49,24 @@ public class NeuronUnit : MonoBehaviour
 
 	private void Awake()
 	{
-		initLocation();
 		initValues();
 
 		return;
 
 		void initValues()
 		{
-			this.zone	= this.GetComponentInParent<Zone>();
-			this.mpb	= new MaterialPropertyBlock();
+			this.ParentZone	= this.GetComponentInParent<Zone>();
+			this.mpb		= new MaterialPropertyBlock();
 			this.GetComponent<MeshRenderer>().SetPropertyBlock( this.mpb );
 		}
 	}
 
+
 	void Start()
     {
 		
+		initLocation();
+
 		setLinks();
 		
 		return;
@@ -72,13 +74,21 @@ public class NeuronUnit : MonoBehaviour
 
 		void setLinks()
 		{
-			this.forwardLinks = Physics.OverlapSphere( this.position, this.zone.UnitLinkRadius )
-				.Select( x => (n:x.GetComponent<NeuronUnit>(), v:0.0f) )
+			this.forwardLinks = Physics.OverlapSphere( this.linkerCenter, this.ParentZone.UnitLinkRadius )
+				.Select( col => col.GetComponent<NeuronUnit>() )
+				.Where( n => n != null )
+				.Where( n => n != this )
+				.Where( n =>
+					this.ParentZone.IsLinkableSelfZone && n.ParentZone == this.ParentZone ||
+					this.ParentZone.ForwardZones.Any( x => x == n.ParentZone )
+				)
+				.Select( n => (n, 0.0f) )
 				.Select( x => (x.n, Random.value))// v のランダム初期化
 				.ToArray()
 				;
 		}
     }
+
 
 	private void Update()
 	{
@@ -86,13 +96,26 @@ public class NeuronUnit : MonoBehaviour
 		showLink();
 	}
 
-	
+
+
 	void initLocation()
 	{
         this.position		= this.transform.position;
-		//this.forward		= 
 		this.linkerCenter	= this.position;
+
+		if( this.ParentZone.ForwardZones.Length == 0 ) return;
+
+		var nearestZonePoint = this.ParentZone.ForwardZones
+			.Where( zone => zone != null )
+			.Select( zone => zone.Shape.ClosestPoint(this.linkerCenter) )
+			.Select( clpoint => (clpoint, dist:Vector3.Distance(this.linkerCenter, clpoint)) )
+			.Aggregate( (pre, cur)=> pre.dist > cur.dist ? cur : pre )
+			.clpoint
+			;
+		this.linkerCenter	= this.position + ( nearestZonePoint - this.position ).normalized * this.ParentZone.UnitLinkArmDistance;
 	}
+
+	
 	void showState()
 	{
 		var vol = this.volume;
