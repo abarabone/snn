@@ -5,13 +5,12 @@ using UnityEngine;
 
 public class Zone : MonoBehaviour
 {
-
-	//public Transform	Tf { get; private set; }
-	public float		Radius;
-
-	public float	linkRadius;
-	public int		MaxNeurons;
 	
+	public int		MaxNeurons;
+
+	public float	UnitLinkRadius;
+	//public float	UnitQuantize;
+
 	public Zone[]	forwardZones;
 
 
@@ -22,17 +21,22 @@ public class Zone : MonoBehaviour
 	
 	public Vector3 GetRandomPosition( int i )
 	{
-		while( false )
+		if( this.UnitLinkRadius == 0.0f ) return this.Shape.bounds.center;
+
+		while( true )
 		{
 			Random.InitState( i );
 			var bbox	= this.Shape.bounds;
-			var px		= Random.Range( bbox.min.x,bbox.max.x );
-			var py		= Random.Range( bbox.min.y,bbox.max.y );
-			var pz		= Random.Range( bbox.min.z,bbox.max.z );
+			var px		= Random.Range( bbox.min.x, bbox.max.x );
+			var py		= Random.Range( bbox.min.y, bbox.max.y );
+			var pz		= Random.Range( bbox.min.z, bbox.max.z );
+			//px -= px % this.UnitQuantize;
+			//py -= py % this.UnitQuantize;
+			//pz -= pz % this.UnitQuantize;
 			var rndInBbox = new Vector3( px, py, pz );
-
-			if( this.Shape.ClosestPoint(rndInBbox) != rndInBbox ) return rndInBbox;
-		}return new Vector3();
+			
+			if( this.Shape.ClosestPoint(rndInBbox) == rndInBbox ) return rndInBbox;
+		}
 	}
 
 	private void Awake()
