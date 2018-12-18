@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class Zone : MonoBehaviour
+public class ZoneRandom : MonoBehaviour
 {
 	
 	public int		MaxNeurons;
@@ -12,10 +12,9 @@ public class Zone : MonoBehaviour
 	public float	UnitLinkArmDistance;
 	//public float	UnitQuantize;
 
-	public Zone[]	ForwardZones;
+	public IZone[]	ForwardZones;
 
 	public bool		IsLinkableSelfZone;
-	public bool		IsEquality;
 	public int		xlen, ylen, zlne;
 
 	public NeuronUnit	NeuronTemplate;
@@ -24,6 +23,12 @@ public class Zone : MonoBehaviour
 	[HideInInspector]
 	public Collider	Shape;
 	
+
+	public bool Is(  )
+	{
+		this.IsLinkableSelfZone && n.ParentZone == this ||
+		this.ForwardZones.Any( x => x == n.ParentZone )
+	}
 
 
 	private void Awake()

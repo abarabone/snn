@@ -12,7 +12,7 @@ public class NeuronUnit : MonoBehaviour
 	(NeuronUnit n, float v)[]	forwardLinks;
 
 	[HideInInspector]
-	public Zone ParentZone;
+	public IZone ParentZone;
 
 	Vector3	linkerCenter;
 	Vector3	position;
@@ -55,7 +55,7 @@ public class NeuronUnit : MonoBehaviour
 
 		void initValues()
 		{
-			this.ParentZone	= this.GetComponentInParent<Zone>();
+			this.ParentZone	= this.GetComponentInParent<IZone>();
 			this.mpb		= new MaterialPropertyBlock();
 			this.GetComponent<MeshRenderer>().SetPropertyBlock( this.mpb );
 		}
