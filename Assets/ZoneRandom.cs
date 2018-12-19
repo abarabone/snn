@@ -9,7 +9,6 @@ public class ZoneRandom : ZoneBase
 	public int		MaxNeurons;
 
 	public bool		IsLinkableSelfZone;
-	public int		xlen, ylen, zlne;
 
 	
 	

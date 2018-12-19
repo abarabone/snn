@@ -45,6 +45,7 @@ public abstract class ZoneBase : MonoBehaviour
 		
 		return;
 
+
 		void initValues()
 		{
 			this.Shape	= this.GetComponent<Collider>();
