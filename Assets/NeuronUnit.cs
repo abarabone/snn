@@ -12,7 +12,10 @@ public class NeuronUnit : MonoBehaviour
 	(NeuronUnit n, float v)[]	forwardLinks;
 
 	[HideInInspector]
-	public IZone ParentZone;
+	public ZoneBase	ParentZone;
+
+	public float	UnitLinkRadius;
+	public float	UnitLinkArmDistance;
 
 	Vector3	linkerCenter;
 	Vector3	position;
@@ -55,7 +58,7 @@ public class NeuronUnit : MonoBehaviour
 
 		void initValues()
 		{
-			this.ParentZone	= this.GetComponentInParent<IZone>();
+			this.ParentZone	= this.GetComponentInParent<ZoneBase>();
 			this.mpb		= new MaterialPropertyBlock();
 			this.GetComponent<MeshRenderer>().SetPropertyBlock( this.mpb );
 		}
@@ -74,14 +77,11 @@ public class NeuronUnit : MonoBehaviour
 
 		void setLinks()
 		{
-			this.forwardLinks = Physics.OverlapSphere( this.linkerCenter, this.ParentZone.UnitLinkRadius )
+			this.forwardLinks = Physics.OverlapSphere( this.linkerCenter, this.UnitLinkRadius )
 				.Select( col => col.GetComponent<NeuronUnit>() )
 				.Where( n => n != null )
 				.Where( n => n != this )
-				.Where( n =>
-					this.ParentZone.IsLinkableSelfZone && n.ParentZone == this.ParentZone ||
-					this.ParentZone.ForwardZones.Any( x => x == n.ParentZone )
-				)
+				.Where( n => this.ParentZone.IsLinkTarget(n.ParentZone) )
 				.Select( n => (n, 0.0f) )
 				.Select( x => (x.n, Random.value))// v のランダム初期化
 				.ToArray()
@@ -101,18 +101,7 @@ public class NeuronUnit : MonoBehaviour
 	void initLocation()
 	{
         this.position		= this.transform.position;
-		this.linkerCenter	= this.position;
-
-		if( this.ParentZone.ForwardZones.Length == 0 ) return;
-
-		var nearestZonePoint = this.ParentZone.ForwardZones
-			.Where( zone => zone != null )
-			.Select( zone => zone.Shape.ClosestPoint(this.linkerCenter) )
-			.Select( clpoint => (clpoint, dist:Vector3.Distance(this.linkerCenter, clpoint)) )
-			.Aggregate( (pre, cur)=> pre.dist > cur.dist ? cur : pre )
-			.clpoint
-			;
-		this.linkerCenter	= this.position + ( nearestZonePoint - this.position ).normalized * this.ParentZone.UnitLinkArmDistance;
+		this.linkerCenter	= this.ParentZone.CalucNeuronForwardosition( this.position, this.UnitLinkArmDistance );
 	}
 
 	

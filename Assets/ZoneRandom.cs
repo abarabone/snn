@@ -3,45 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class ZoneRandom : MonoBehaviour
+public class ZoneRandom : ZoneBase
 {
 	
 	public int		MaxNeurons;
 
-	public float	UnitLinkRadius;
-	public float	UnitLinkArmDistance;
-	//public float	UnitQuantize;
-
-	public IZone[]	ForwardZones;
-
 	public bool		IsLinkableSelfZone;
 	public int		xlen, ylen, zlne;
 
-	public NeuronUnit	NeuronTemplate;
-
-
-	[HideInInspector]
-	public Collider	Shape;
+	
 	
 
-	public bool Is(  )
+	public override bool IsLinkTarget( ZoneBase other )
 	{
-		this.IsLinkableSelfZone && n.ParentZone == this ||
-		this.ForwardZones.Any( x => x == n.ParentZone )
+		return
+			this.IsLinkableSelfZone && (ZoneBase)this == other
+			||
+			this.ForwardZones.Any( zone => zone == other )
+			;
 	}
 
-
-	private void Awake()
-	{
-		initValues();
-		
-		return;
-
-		void initValues()
-		{
-			this.Shape	= this.GetComponent<Collider>();
-		}
-	}
 
 	private void Start()
 	{
@@ -77,7 +58,7 @@ public class ZoneRandom : MonoBehaviour
 				//py -= py % this.UnitQuantize;
 				//pz -= pz % this.UnitQuantize;
 				var rndInBbox = new Vector3( px, py, pz );
-			
+				
 				if( this.Shape.ClosestPoint(rndInBbox) == rndInBbox ) return rndInBbox;
 			}
 		}
