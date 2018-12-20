@@ -39,14 +39,17 @@ public class ZoneUniform : ZoneBase
 			var box	= this.Shape as BoxCollider;
 			if( box == null ) return;
 
-			var xspan	= box.size.x / (this.xlen + 1);
-			var yspan	= box.size.y / (this.ylen + 1);
-			var zspan	= box.size.z / (this.zlen + 1);
+			var span = new Vector3
+			{
+				x	= box.size.x / this.xlen,
+				y	= box.size.y / this.ylen,
+				z	= box.size.z / this.zlen
+			};
 
-			var offset	= ( box.center - new Vector3( box.size.x * 0.5f, box.size.y * 0.5f, box.size.z * 0.5f ) );
+			var offset	= box.center - box.size * 0.5f + span * 0.5f;
 
-
-			foreach( var i in Enumerable.Range(0, this.xlen * this.ylen * this.zlen) )
+			
+			foreach( var i in Enumerable.Range( 0, this.xlen * this.ylen * this.zlen ) )
 			{
 				GameObject.Instantiate<NeuronUnit>
 					( this.NeuronTemplate, getNextPosition(i), Quaternion.identity, tf );
@@ -54,16 +57,19 @@ public class ZoneUniform : ZoneBase
 
 			return;
 
-
+			
 			Vector3 getNextPosition( int i )
 			{
 				if( this.UnitLinkRadius == 0.0f ) return this.Shape.bounds.center;
 
-				var x = i / (this.ylen * this.zlen) + 0.5f;
-				var y = i % this.zlen * this.xlen + 0.5f;
-				var z = i % (this.xlen * this.ylen) + 0.5f;
+				var iv	= new Vector3
+				{
+					x = i % this.xlen,
+					y = i / this.xlen % this.ylen,
+					z = i / (this.xlen * this.ylen)// % this.zlen
+				};
 
-				return offset + new Vector3( x * xspan, y * yspan, z * zspan );
+				return tf.TransformPoint( offset + Vector3.Scale( span, iv ) );
 			}
 			
 		}
