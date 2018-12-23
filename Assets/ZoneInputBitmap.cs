@@ -2,10 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ZoneInputBitmap : ZoneUniform
+namespace Neuron
 {
+	public class ZoneInputBitmap : ZoneUniform
+	{
     
 
 
 
+	}
 }
+

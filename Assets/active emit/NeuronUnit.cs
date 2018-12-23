@@ -6,7 +6,7 @@ using UnityEngine;
 namespace Neuron.ActiveEmit
 {
 	
-	public class NeuronUnit_Act : MonoBehaviour
+	public class NeuronUnit : MonoBehaviour
 	{
 
 		[SerializeField]
@@ -65,7 +65,7 @@ namespace Neuron.ActiveEmit
 		public void Teach( bool isSuccess )
 		{
 		
-			var v = isSuccess ? +10.1f : -10.1f;
+			var v = isSuccess ? +0.01f : -0.01f;
 
 			backPropagation();
 
@@ -99,6 +99,8 @@ namespace Neuron.ActiveEmit
 		{
 			initValues();
 
+			initLocation();
+
 			return;
 
 
@@ -109,14 +111,20 @@ namespace Neuron.ActiveEmit
 				this.mpb		= new MaterialPropertyBlock();
 				this.backLinks	= new List<LinkUnit>();
 			}
+			void initLocation()
+			{
+				this.position		= this.transform.position;
+				this.linkerCenter	= this.ParentZone.CalucNeuronForwardosition( this.position, this.ParentZone.UnitLinkArmDistance );
+			}
+
 		}
 
 
-		void OnMouseUp()
+		void OnMouseDown()
 		{
 			Debug.Log(this.name);
 
-			Teach( Input.GetMouseButton(0) );
+			Teach( !Input.GetKey(KeyCode.LeftShift) );
 
 		}
 
@@ -124,24 +132,16 @@ namespace Neuron.ActiveEmit
 		protected void Start()
 		{
 		
-			initLocation();
-
 			setLinks();
 			createLines();
 		
 			return;
 
 
-			void initLocation()
-			{
-				this.position		= this.transform.position;
-				this.linkerCenter	= this.ParentZone.CalucNeuronForwardosition( this.position, this.ParentZone.UnitLinkArmDistance );
-			}
-
 			void setLinks()
 			{
 				this.forwardLinks = Physics.OverlapSphere( this.linkerCenter, this.ParentZone.UnitLinkRadius )
-					.Select( col => col.GetComponent<NeuronUnit_Act>() )
+					.Select( col => col.GetComponent<NeuronUnit>() )
 					.Where( n => n != null )
 					.Where( n => n != this )
 					.Where( n => this.ParentZone.IsLinkTarget(n.ParentZone) )
@@ -183,17 +183,20 @@ namespace Neuron.ActiveEmit
 		}
 
 
-		protected void LateUpdate()
+		void Update()
+		{
+			this.volume = 0;
+		}
+		void OnWillRenderObject()
 		{
 			showState();
 			showLink();
-			this.volume = 0;
 		}
 
 	
 		void showState()
 		{
-			this.mpb.SetColor( NeuronUnit_Act.colorNameId, this.volume.ToColor() );
+			this.mpb.SetColor( NeuronUnit.colorNameId, this.volume.ToColor() );
 			this.nodeRenderer.SetPropertyBlock( this.mpb );
 		}
 
@@ -209,7 +212,7 @@ namespace Neuron.ActiveEmit
 
 			void setLineColor( LineRenderer line, Color color )
 			{
-				this.mpb.SetColor( NeuronUnit_Act.colorNameId, color );
+				this.mpb.SetColor( NeuronUnit.colorNameId, color );
 				line.SetPropertyBlock( this.mpb );
 				//line.startColor = color;
 				//line.endColor	= color;
@@ -222,8 +225,8 @@ namespace Neuron.ActiveEmit
 
 	public class LinkUnit
 	{
-		public NeuronUnit_Act	start;
-		public NeuronUnit_Act	end;
+		public NeuronUnit	start;
+		public NeuronUnit	end;
 
 		public float		value;
 	}

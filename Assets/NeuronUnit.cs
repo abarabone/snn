@@ -8,7 +8,7 @@ namespace Neuron
 	
 	public class NeuronUnit : MonoBehaviour
 	{
-
+	/*
 		[HideInInspector]
 		public ZoneBase	ParentZone;
 		
@@ -98,10 +98,10 @@ namespace Neuron
 
 			void initValues()
 			{
-				this.ParentZone	= this.GetComponentInParent<ZoneBase>();
-				this.nodeRenderer		= this.GetComponent<Renderer>();
-				this.mpb		= new MaterialPropertyBlock();
-				this.backLinks	= new List<LinkUnit>();
+				this.ParentZone		= this.GetComponentInParent<ZoneBase>();
+				this.nodeRenderer	= this.GetComponent<Renderer>();
+				this.mpb			= new MaterialPropertyBlock();
+				this.backLinks		= new List<LinkUnit>();
 			}
 		}
 
@@ -210,19 +210,10 @@ namespace Neuron
 			}
 		}
 
+	*/
+	}
+
 	
-	}
-
-
-	public class LinkUnit
-	{
-		public NeuronUnit_Act	start;
-		public NeuronUnit_Act	end;
-
-		public float		value;
-	}
-
-
 	static class ColorExtentions
 	{
 		static public Color ToColor( ref this Vector3 v )
@@ -236,5 +227,5 @@ namespace Neuron
 			return v.ToColor();
 		}
 	}
-
+	
 }

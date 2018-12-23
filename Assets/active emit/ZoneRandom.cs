@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace Neuron
+namespace Neuron.ActiveEmit
 {
 	public class ZoneRandom : ZoneBase
 	{
