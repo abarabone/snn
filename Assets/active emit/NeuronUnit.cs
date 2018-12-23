@@ -52,6 +52,7 @@ namespace Neuron.ActiveEmit
 			void addVolume()
 			{
 				this.volume += v;
+				this.volume = Mathf.Clamp01( this.volume );
 			}
 			void forwardPropagation()
 			{
@@ -64,8 +65,11 @@ namespace Neuron.ActiveEmit
 
 		public void Teach( bool isSuccess )
 		{
-		
-			var v = isSuccess ? +0.01f : -0.01f;
+			
+			var ii = this.IsEmit() ? this.volume : this.volume ;
+			var aa = this.IsEmit() ? this.volume : this.volume ;
+
+			var v = isSuccess ? this.volume : -this.volume;//+0.01f : -0.01f;
 
 			backPropagation();
 
@@ -76,7 +80,7 @@ namespace Neuron.ActiveEmit
 			{
 				foreach( var link in this.backLinks )
 				{
-					if( !link.start.IsEmit() ) continue;
+					var vv = link.start.IsEmit() ? v : v * -1.0f;
 
 					link.value += v;
 					link.start.Teach( isSuccess );
