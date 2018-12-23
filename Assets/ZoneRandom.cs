@@ -31,6 +31,7 @@ public class ZoneRandom : ZoneBase
 
 		return;
 
+
 		void createNeurons()
 		{
 

@@ -3,20 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace Neuron
+namespace Neuron.ActiveEmit
 {
 	
-	public class NeuronUnit : MonoBehaviour
+	public class NeuronUnit_Act : MonoBehaviour
 	{
+
+		[SerializeField]
+		float	volume;
+
+		//(NeuronUnit n, float v)[]	forwardLinks;
+		[SerializeField]
+		LinkUnit[]	forwardLinks;
+		[SerializeField]
+		List<LinkUnit>	backLinks;
 
 		[HideInInspector]
 		public ZoneBase	ParentZone;
-		
-		[SerializeField]
-		float	volume;
-		
-		List<(NeuronUnit n, float v)> backLinks;
 
+		//public float	UnitLinkRadius;
+		//public float	UnitLinkArmDistance;
 
 		Vector3	linkerCenter;
 		Vector3	position;

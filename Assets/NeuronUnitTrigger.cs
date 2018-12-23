@@ -16,8 +16,6 @@ public class NeuronUnitTrigger : NeuronUnit
 
 		this.Emit( 1.0f );
 
-
-		base.Update();
 	}
 
 }

@@ -41,6 +41,7 @@ public abstract class ZoneBase : MonoBehaviour
 	
 	private void Awake()
 	{
+
 		initValues();
 		
 		return;
