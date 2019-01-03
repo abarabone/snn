@@ -52,7 +52,7 @@ namespace Neuron.ActiveEmit
 			void addVolume()
 			{
 				this.volume += v;
-				this.volume = Mathf.Clamp01( this.volume );
+			//	this.volume = Mathf.Clamp01( this.volume );
 			}
 			void forwardPropagation()
 			{
@@ -65,13 +65,9 @@ namespace Neuron.ActiveEmit
 
 		public void Teach( bool isSuccess )
 		{
+			if( isSuccess ) backPropagation(); else backPropagationAnti();
 			
-			var ii = this.IsEmit() ? this.volume : this.volume ;
-			var aa = this.IsEmit() ? this.volume : this.volume ;
-
-			var v = isSuccess ? this.volume : -this.volume;//+0.01f : -0.01f;
-
-			backPropagation();
+			/*backPropagation()*/;
 
 			return;
 
@@ -80,15 +76,38 @@ namespace Neuron.ActiveEmit
 			{
 				foreach( var link in this.backLinks )
 				{
-					var vv = link.start.IsEmit() ? v : v * -1.0f;
+					//if( !( this.IsEmit() ^ link.start.IsEmit() ) ) continue;
 
-					link.value += v;
-					link.start.Teach( isSuccess );
+					if( this.IsEmit() )
+					{
+						link.value += link.start.IsEmit() ? +0.1f : 0.0f;
+					}
+					else
+					{
+						link.value += link.start.IsEmit() ? -0.1f : 0.0f;
+					}
+				}
+			}
+
+			void backPropagationAnti()
+			{
+				foreach( var link in this.backLinks )
+				{
+					//if( !( this.IsEmit() ^ link.start.IsEmit() ) ) continue;
+
+					if( this.IsEmit() )
+					{
+						link.value += link.start.IsEmit() ? -0.1f : 0.0f;
+					}
+					else
+					{
+						link.value += link.start.IsEmit() ? +0.1f : 0.0f;
+					}
 				}
 			}
 		}
 
-		bool IsEmit()
+		public bool IsEmit()
 		{
 			return this.volume >= 1.0f;
 		}
@@ -126,10 +145,10 @@ namespace Neuron.ActiveEmit
 
 		void OnMouseDown()
 		{
-			Debug.Log(this.name);
+			Debug.Log( $"this.name {!Input.GetKey(KeyCode.LeftShift)}" );
 
-			Teach( !Input.GetKey(KeyCode.LeftShift) );
-
+			//Teach( false );//!Input.GetKey(KeyCode.LeftShift) );
+			this.StartCoroutine( this.GetComponentInParent<ZoneBase>().AutoTeaching( 100 ) );
 		}
 
 
@@ -200,7 +219,7 @@ namespace Neuron.ActiveEmit
 	
 		void showState()
 		{
-			this.mpb.SetColor( NeuronUnit.colorNameId, this.volume.ToColor() );
+			this.mpb.SetColor( NeuronUnit.colorNameId, Mathf.Floor( this.volume ).ToColor() );
 			this.nodeRenderer.SetPropertyBlock( this.mpb );
 		}
 
@@ -244,7 +263,7 @@ namespace Neuron.ActiveEmit
 		}
 		static public Color ToColor( this float f )
 		{
-			var v = new Vector3( Mathf.Clamp01(-f), f, Mathf.Clamp01(f) );
+			var v = new Vector3( Mathf.Clamp01(-f), Mathf.Clamp01(Mathf.Ceil(f)), Mathf.Clamp01(Mathf.Ceil(f)) );
 
 			return v.ToColor();
 		}

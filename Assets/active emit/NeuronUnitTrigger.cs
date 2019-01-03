@@ -10,17 +10,17 @@ namespace Neuron.ActiveEmit
 		public float	trigger;
 
 
-		new void Awake() => base.Awake();
-		new void Start() => base.Start();
+		//new void Awake() => base.Awake();
+		//new void Start() => base.Start();
 
-		new void LateUpdate()
+		void LateUpdate()
 		{
 			
 			this.Emit( trigger );
 
 		}
 
-		new void OnMouseDown()
+		void OnMouseDown()
 		{
 
 			this.trigger = this.trigger > 0.0f ? 0.0f : 1.0f;

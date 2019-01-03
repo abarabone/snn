@@ -56,6 +56,52 @@ namespace Neuron.ActiveEmit
 			}
 		}
 
+
+
+
+		public IEnumerator AutoTeaching( int freq )
+		{
+			var children	= this.GetComponentsInChildren<NeuronUnit>();
+			var inputs		= this.transform
+				.parent
+				.GetComponentsInChildren<ZoneBase>()
+				.Where( zone => zone != this )
+				.SelectMany( zone => zone.GetComponentsInChildren<NeuronUnit>() )
+				;
+
+			//Random.InitState( freq );
+
+			foreach( var i in Enumerable.Range(0,freq) )
+			{
+				var emittedInputCount = setRandomInputs();
+				teachAll( emittedInputCount >= 5 );
+
+				yield return null;
+			}
+			
+			yield return null;
+
+
+			int setRandomInputs()
+			{
+				foreach( var input in inputs )
+				{
+					input.Clear();
+					input.Emit( Random.value > 0.5f ? 1.0f : 0.0f );
+				}
+
+				return children.Where( child => child.IsEmit() ).Count();
+			}
+
+			void teachAll( bool isSuccess )
+			{
+				foreach( var child in children )
+				{
+					child.Teach( isSuccess );
+					child.Clear();
+				}
+			}
+		}
 	}
 
 }
