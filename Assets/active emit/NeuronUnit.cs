@@ -10,7 +10,8 @@ namespace Neuron.ActiveEmit
 	{
 
 		[SerializeField]
-		float	volume;
+		public float	volume;
+		public float	limit;
 
 		//(NeuronUnit n, float v)[]	forwardLinks;
 		[SerializeField]
@@ -65,43 +66,32 @@ namespace Neuron.ActiveEmit
 
 		public void Teach( bool isSuccess )
 		{
+			Debug.Log( $"{this.name} {isSuccess}" );
 			if( isSuccess ) backPropagation(); else backPropagationAnti();
-			
-			/*backPropagation()*/;
 
 			return;
 
 
 			void backPropagation()
 			{
-				foreach( var link in this.backLinks )
+				if( !this.IsEmit() )
 				{
-					//if( !( this.IsEmit() ^ link.start.IsEmit() ) ) continue;
-
-					if( this.IsEmit() )
+					this.limit += -0.1f;
+					foreach( var link in this.backLinks )
 					{
 						link.value += link.start.IsEmit() ? +0.1f : 0.0f;
-					}
-					else
-					{
-						link.value += link.start.IsEmit() ? -0.1f : 0.0f;
 					}
 				}
 			}
 
 			void backPropagationAnti()
 			{
-				foreach( var link in this.backLinks )
-				{
-					//if( !( this.IsEmit() ^ link.start.IsEmit() ) ) continue;
-
-					if( this.IsEmit() )
+				if( this.IsEmit() )
+				{ 
+					this.limit += +0.1f;
+					foreach( var link in this.backLinks )
 					{
 						link.value += link.start.IsEmit() ? -0.1f : 0.0f;
-					}
-					else
-					{
-						link.value += link.start.IsEmit() ? +0.1f : 0.0f;
 					}
 				}
 			}
@@ -109,7 +99,7 @@ namespace Neuron.ActiveEmit
 
 		public bool IsEmit()
 		{
-			return this.volume >= 1.0f;
+			return this.volume >= this.limit;
 		}
 
 		public void Clear()
@@ -129,6 +119,8 @@ namespace Neuron.ActiveEmit
 
 			void initValues()
 			{
+				this.limit		= 1.0f;//
+				this.volume		= 0.0f;//
 				this.ParentZone	= this.GetComponentInParent<ZoneBase>();
 				this.nodeRenderer		= this.GetComponent<Renderer>();
 				this.mpb		= new MaterialPropertyBlock();
@@ -145,10 +137,10 @@ namespace Neuron.ActiveEmit
 
 		void OnMouseDown()
 		{
-			Debug.Log( $"this.name {!Input.GetKey(KeyCode.LeftShift)}" );
+			Debug.Log( $"{this.name} {!Input.GetKey(KeyCode.LeftShift)}" );
 
-			//Teach( false );//!Input.GetKey(KeyCode.LeftShift) );
-			this.StartCoroutine( this.GetComponentInParent<ZoneBase>().AutoTeaching( 100 ) );
+			Teach( !Input.GetKey(KeyCode.LeftShift) );
+			//this.StartCoroutine( this.GetComponentInParent<ZoneBase>().AutoTeaching( 100 ) );
 		}
 
 
@@ -263,7 +255,7 @@ namespace Neuron.ActiveEmit
 		}
 		static public Color ToColor( this float f )
 		{
-			var v = new Vector3( Mathf.Clamp01(-f), Mathf.Clamp01(Mathf.Ceil(f)), Mathf.Clamp01(Mathf.Ceil(f)) );
+			var v = new Vector3( Mathf.Clamp01(-f), Mathf.Clamp01(f), Mathf.Clamp01(f) );
 
 			return v.ToColor();
 		}

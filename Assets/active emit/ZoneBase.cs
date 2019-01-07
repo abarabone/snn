@@ -65,8 +65,8 @@ namespace Neuron.ActiveEmit
 			var inputs		= this.transform
 				.parent
 				.GetComponentsInChildren<ZoneBase>()
-				.Where( zone => zone != this )
-				.SelectMany( zone => zone.GetComponentsInChildren<NeuronUnit>() )
+				//.Where( zone => zone != this )
+				.SelectMany( zone => zone.GetComponentsInChildren<NeuronUnitTrigger>() )
 				;
 
 			//Random.InitState( freq );
@@ -87,17 +87,16 @@ namespace Neuron.ActiveEmit
 				foreach( var input in inputs )
 				{
 					input.Clear();
-					input.Emit( Random.value > 0.5f ? 1.0f : 0.0f );
+					input.Emit( Random.value > 0.5f ? 1.0f : 0.0f );Debug.Log($"{input.name} {input.volume}");
 				}
-
-				return children.Where( child => child.IsEmit() ).Count();
+				return inputs.Where( input => input.IsEmit() ).Count();
 			}
 
 			void teachAll( bool isSuccess )
 			{
 				foreach( var child in children )
 				{
-					child.Teach( isSuccess );
+					child.Teach( isSuccess );Debug.Log($"{child.name} {child.volume}");
 					child.Clear();
 				}
 			}
