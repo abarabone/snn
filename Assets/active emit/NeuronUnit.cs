@@ -67,7 +67,7 @@ namespace Neuron.ActiveEmit
 		public void Teach( bool isSuccess )
 		{
 			Debug.Log( $"{this.name} {isSuccess}" );
-			if( isSuccess ) backPropagation(); else backPropagationAnti();
+			if( !isSuccess ) backPropagation();// else backPropagationAnti();
 
 			return;
 
@@ -82,10 +82,10 @@ namespace Neuron.ActiveEmit
 						link.value += link.start.IsEmit() ? +0.1f : 0.0f;
 					}
 				}
-			}
+			//}
 
-			void backPropagationAnti()
-			{
+			//void backPropagationAnti()
+			//{
 				if( this.IsEmit() )
 				{ 
 					this.limit += +0.1f;
@@ -139,8 +139,8 @@ namespace Neuron.ActiveEmit
 		{
 			Debug.Log( $"{this.name} {!Input.GetKey(KeyCode.LeftShift)}" );
 
-			Teach( !Input.GetKey(KeyCode.LeftShift) );
-			//this.StartCoroutine( this.GetComponentInParent<ZoneBase>().AutoTeaching( 100 ) );
+			//Teach( false );//!Input.GetKey(KeyCode.LeftShift) );
+			this.StartCoroutine( this.GetComponentInParent<ZoneBase>().AutoTeaching( 100 ) );
 		}
 
 
@@ -211,7 +211,7 @@ namespace Neuron.ActiveEmit
 	
 		void showState()
 		{
-			this.mpb.SetColor( NeuronUnit.colorNameId, Mathf.Floor( this.volume ).ToColor() );
+			this.mpb.SetColor( NeuronUnit.colorNameId, (this.IsEmit()?1.0f:0.0f).ToColor() );
 			this.nodeRenderer.SetPropertyBlock( this.mpb );
 		}
 

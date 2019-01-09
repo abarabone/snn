@@ -74,7 +74,7 @@ namespace Neuron.ActiveEmit
 			foreach( var i in Enumerable.Range(0,freq) )
 			{
 				var emittedInputCount = setRandomInputs();
-				teachAll( emittedInputCount >= 5 );
+				teachAll( emittedInputCount >= 5 && children[0].IsEmit() );
 
 				yield return null;
 			}
@@ -87,7 +87,7 @@ namespace Neuron.ActiveEmit
 				foreach( var input in inputs )
 				{
 					input.Clear();
-					input.Emit( Random.value > 0.5f ? 1.0f : 0.0f );Debug.Log($"{input.name} {input.volume}");
+					input.Emit( Random.value > 0.5f ? 1.0f : 0.0f );//Debug.Log($"{input.name} {input.volume}");
 				}
 				return inputs.Where( input => input.IsEmit() ).Count();
 			}
@@ -96,7 +96,7 @@ namespace Neuron.ActiveEmit
 			{
 				foreach( var child in children )
 				{
-					child.Teach( isSuccess );Debug.Log($"{child.name} {child.volume}");
+					child.Teach( isSuccess );//Debug.Log($"{child.name} {child.volume}");
 					child.Clear();
 				}
 			}
