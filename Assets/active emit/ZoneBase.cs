@@ -74,9 +74,9 @@ namespace Neuron.ActiveEmit
 			foreach( var i in Enumerable.Range(0,freq) )
 			{
 				var emittedInputCount = setRandomInputs();
-				teachAll( emittedInputCount >= 5 && children[0].IsEmit() );
+				teachAll( emittedInputCount >= 5 && children[0].IsEmit() || emittedInputCount < 5 && !children[0].IsEmit() );
 
-				yield return null;
+				//yield return null;
 			}
 			
 			yield return null;

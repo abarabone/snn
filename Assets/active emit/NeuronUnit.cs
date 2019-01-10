@@ -79,19 +79,15 @@ namespace Neuron.ActiveEmit
 					this.limit += -0.1f;
 					foreach( var link in this.backLinks )
 					{
-						link.value += link.start.IsEmit() ? +0.1f : 0.0f;
+						if( link.start.IsEmit() ) link.value += +0.1f;
 					}
 				}
-			//}
-
-			//void backPropagationAnti()
-			//{
-				if( this.IsEmit() )
+				else
 				{ 
 					this.limit += +0.1f;
 					foreach( var link in this.backLinks )
 					{
-						link.value += link.start.IsEmit() ? -0.1f : 0.0f;
+						if( link.start.IsEmit() ) link.value += -0.1f;
 					}
 				}
 			}
