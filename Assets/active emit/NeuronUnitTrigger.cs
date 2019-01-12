@@ -16,6 +16,7 @@ namespace Neuron.ActiveEmit
 		void LateUpdate()
 		{
 			
+			this.Clear();
 			this.Emit( trigger );
 
 		}

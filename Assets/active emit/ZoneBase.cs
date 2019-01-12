@@ -58,25 +58,25 @@ namespace Neuron.ActiveEmit
 
 
 
-
+		int	seed;
 		public IEnumerator AutoTeaching( int freq )
 		{
 			var children	= this.GetComponentsInChildren<NeuronUnit>();
 			var inputs		= this.transform
 				.parent
 				.GetComponentsInChildren<ZoneBase>()
-				//.Where( zone => zone != this )
+				.Where( zone => zone.NeuronTemplate is NeuronUnitTrigger )
 				.SelectMany( zone => zone.GetComponentsInChildren<NeuronUnitTrigger>() )
 				;
 
-			//Random.InitState( freq );
+			Random.InitState( this.seed++ );
 
 			foreach( var i in Enumerable.Range(0,freq) )
 			{
 				var emittedInputCount = setRandomInputs();
 				teachAll( emittedInputCount >= 5 && children[0].IsEmit() || emittedInputCount < 5 && !children[0].IsEmit() );
 
-				//yield return null;
+				yield return null;
 			}
 			
 			yield return null;

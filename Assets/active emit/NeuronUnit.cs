@@ -66,29 +66,44 @@ namespace Neuron.ActiveEmit
 
 		public void Teach( bool isSuccess )
 		{
-			Debug.Log( $"{this.name} {isSuccess}" );
+			//Debug.Log( $"{this.name} {isSuccess}" );
 			if( !isSuccess ) backPropagation();// else backPropagationAnti();
+
+			teachChildren();
 
 			return;
 
 
 			void backPropagation()
 			{
-				if( !this.IsEmit() )
+				var value	= this.IsEmit() ? +0.1f : -0.1f;
+				this.limit += value;
+				foreach( var link in this.backLinks )
 				{
-					this.limit += -0.1f;
-					foreach( var link in this.backLinks )
-					{
-						if( link.start.IsEmit() ) link.value += +0.1f;
-					}
+					if( link.start.IsEmit() ) link.value += -value;
 				}
-				else
-				{ 
-					this.limit += +0.1f;
-					foreach( var link in this.backLinks )
-					{
-						if( link.start.IsEmit() ) link.value += -0.1f;
-					}
+				//if( !this.IsEmit() )
+				//{
+				//	this.limit += -0.1f;
+				//	foreach( var link in this.backLinks )
+				//	{
+				//		if( link.start.IsEmit() ) link.value += +0.1f;
+				//	}
+				//}
+				//else
+				//{ 
+				//	this.limit += +0.1f;
+				//	foreach( var link in this.backLinks )
+				//	{
+				//		if( link.start.IsEmit() ) link.value += -0.1f;
+				//	}
+				//}
+			}
+			void teachChildren()
+			{
+				foreach( var link in this.backLinks )
+				{
+					link.start.Teach( isSuccess );
 				}
 			}
 		}
@@ -136,7 +151,7 @@ namespace Neuron.ActiveEmit
 			Debug.Log( $"{this.name} {!Input.GetKey(KeyCode.LeftShift)}" );
 
 			//Teach( false );//!Input.GetKey(KeyCode.LeftShift) );
-			this.StartCoroutine( this.GetComponentInParent<ZoneBase>().AutoTeaching( 100 ) );
+			this.StartCoroutine( this.GetComponentInParent<ZoneBase>().AutoTeaching( 1000 ) );
 		}
 
 
