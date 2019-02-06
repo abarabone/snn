@@ -15,21 +15,35 @@ namespace a
 		public float	bias;
 		public float	activation;
 		public float	sum_value;
+		public float	delta_value;
 
 		public Func<float, float>	f;
 		public Func<float, float>	d;
 
+		public readonly float	learning_rate	= 0.3f;
+
 		public void activate()
-		{
-			this.activation = this.backs
+		{ 
+			this.sum_value = this.backs
 				.Sum( link => link.weight * link.back.activation )
 				;
+			this.activation = this.f( this.sum_value );
 		}
 		public void learn()
 		{
-			this.forwards
-				.Select( link => link.delta * link.weight_old * this.d(this.sum_value) )
-				.
+			var delta = this.forwards
+				.Sum( link => link.forward.delta_value * link.weight_old )
+				;
+			this.delta_value = delta * this.d( this.sum_value );
+
+			var modify_backs = this.backs
+				.Select( link => this.delta_value * link.back.activation * this.learning_rate )
+				;
+			foreach( var (modify, link) in Enumerable.Zip(modify_backs, this.backs) )
+			{
+				link.weight += modify;
+			}
+			this.bias += modify_backs.Sum();
 		}
 		public void init()
 		{
@@ -42,7 +56,6 @@ namespace a
 	{
 		public float	weight;
 		public float	weight_old;
-		public float	delta;
 
 		public NeuronUnit	back;
 		public NeuronUnit	forward;
@@ -59,8 +72,17 @@ namespace a
 
 		public void propergate_forward()
 		{
-			layers
-				.Select(  )
+			foreach( var n in layers.SelectMany( layer => layer.neurons ) )
+			{
+				n.activate();
+			}
+		}
+		public void propergate_back()
+		{
+			foreach( var n in layers.Reverse<LayerUnit>().SelectMany( layer => layer.neurons ) )
+			{
+				n.learn();
+			}
 		}
 	}
 }
