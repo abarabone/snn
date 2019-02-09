@@ -6,16 +6,16 @@ using System.Linq;
 
 namespace a
 {
-
+	
+	[Serializable]
 	public class NeuronUnit
 	{
-		public LinkUnit[]	forwards;
-		public LinkUnit[]	backs;
+		public NeuronLinkUnit[]	forwards;
+		public NeuronLinkUnit[]	backs;
 
 		public float	bias;
 		public float	activation;
 		public float	sum_value;
-		public float	delta_value;
 
 		public Func<float, float>	f;
 		public Func<float, float>	d;
@@ -29,22 +29,46 @@ namespace a
 				;
 			this.activation = this.f( this.sum_value );
 		}
+
 		public void learn()
 		{
-			var delta = this.forwards
-				.Sum( link => link.forward.delta_value * link.weight_old )
-				;
-			this.delta_value = delta * this.d( this.sum_value );
 
-			var modify_backs = this.backs
-				.Select( link => this.delta_value * link.back.activation * this.learning_rate )
-				;
-			foreach( var (modify, link) in Enumerable.Zip(modify_backs, this.backs, (x,y) => (x,y) ) )
+			var delta_value = retrieve_delta_from_forwards_();
+
+			modify_to_backs_( delta_value );
+			
+			return;
+
+
+			/// 出力側から重みのかけられたδを取得し、合計する。
+			float retrieve_delta_from_forwards_()
 			{
-				link.weight += modify;
-				this.bias	+= modify;
+				var sum_delta_forwards = this.forwards
+					.Sum( link => link.delta_weighted )
+					;
+				return sum_delta_forwards * this.d( this.activation );
+			}
+
+			/// 入力側へδを伝える。
+			void modify_to_backs_( float delta_value_ )
+			{
+				var modify_for_backs = this.backs
+					.Select( link => delta_value_ * link.back.activation * this.learning_rate )
+					;
+				foreach( var (modify, link) in Enumerable.Zip(modify_for_backs, this.backs, (x,y) => (x,y)) )
+				{
+					link.delta_weighted	= link.weight * delta_value;// 更新前の重みを使用する。
+					link.weight			+= modify;
+					this.bias			+= modify;
+				}
 			}
 		}
+
+		public void caluclate_delta_value( float correct_value )
+		{
+			this.forwards[0].delta_weighted	= correct_value - this.activation;
+		}
+
 		public NeuronUnit()
 		{
 			this.f = sum_value => 1.0f / ( 1.0f + (float)Math.Exp((float)-sum_value) );
@@ -52,46 +76,54 @@ namespace a
 		}
 	}
 
-	public class LinkUnit
+	[Serializable]
+	public class NeuronLinkUnit
 	{
-		public float	weight;
-		public float	weight_old;
-
 		public NeuronUnit	back;
 		public NeuronUnit	forward;
-	}
 
+		public float	weight;
+		public float	delta_weighted;
+	}
+	
+	[Serializable]
 	public class LayerUnit
 	{
 		public NeuronUnit[]	neurons;
-		public LayerUnit( int length ) => this.neurons = new NeuronUnit[ length ];
+		public LayerUnit( int length ) => this.neurons = Enumerable.Repeat( new NeuronUnit(), length ).ToArray();
 	}
-
+	
+	[Serializable]
 	public class N
 	{
-		public LayerUnit[]	layers =
-		{
-			new LayerUnit( 2 ),
-			new LayerUnit( 1 )
-		};
+		public LayerUnit[]	layers;
 
-		public N()
+		public N( int[] neuron_length_per_layers )
 		{
+			create_layers( neuron_length_per_layers );
 			init_links();
+		}
+
+		public void create_layers( int[] neuron_length_per_layers )
+		{
+			this.layers = neuron_length_per_layers
+				.Select( num => new LayerUnit(num) )
+				.ToArray()
+				;
 		}
 
 		public void propergate_forward()
 		{
-			//foreach( var n in layers.SelectMany( layer => layer.neurons ) )
-			foreach( var n in from layer in this.layers from n in layer.neurons select n )
+			foreach( var n in layers.SelectMany( layer => layer.neurons ) )
+			//foreach( var n in from layer in this.layers from n in layer.neurons select n )
 			{
 				n.activate();
 			}
 		}
 		public void propergate_back()
 		{
-			//foreach( var n in layers.Reverse<LayerUnit>().SelectMany( layer => layer.neurons ) )
-			foreach( var n in from layer in this.layers.Reverse<LayerUnit>() from n in layer.neurons select n )
+			foreach( var n in layers.Reverse<LayerUnit>().SelectMany( layer => layer.neurons ) )
+			//foreach( var n in from layer in this.layers.Reverse<LayerUnit>() from n in layer.neurons select n )
 			{
 				n.learn();
 			}
@@ -101,28 +133,51 @@ namespace a
 		{
 			this.layers.Aggregate( (prev_layer, next_layer) => set_links_to_both_side_nodes_( prev_layer, next_layer ) );
 
+			set_links_output_terminate_();
+
 			return;
 
+
+			/// 層の間にリンクを張る。
 			LayerUnit set_links_to_both_side_nodes_( LayerUnit prev_layer, LayerUnit next_layer )
 			{
 				var q = from pn in prev_layer.neurons
 						from nn in next_layer.neurons
-						select new LinkUnit
+						select new NeuronLinkUnit
 						{
-							back	= pn,
-							forward	= nn,
-							weight	= 0,
+							back		= pn,
+							forward		= nn,
+							weight	= UnityEngine.Random.value,
 						}
 						;
-				foreach( var prev_group in from n in q group q by n.back )
+				var neuron_pairs = q.ToArray();
+				foreach( var prev_group in from n in neuron_pairs group n by n.back )
 				{
-					prev_group.Key.forwards = prev_group.SelectMany( links => links ).ToArray();
+					prev_group.Key.forwards = prev_group.ToArray();
 				}
-				foreach( var next_group in from n in q group q by n.forward )
+				foreach( var next_group in from n in neuron_pairs group n by n.forward )
 				{
-					next_group.Key.forwards = next_group.SelectMany( links => links ).ToArray();
+					next_group.Key.forwards = next_group.ToArray();
 				}
 				return next_layer;
+			}
+
+			/// 出力層にも null ノードへのリンクを張っておく。
+			/// ・一般化されるため、逆伝搬で出力層用のコードが必要なくなる。
+			void set_links_output_terminate_()
+			{
+				var q = from node in layers.Last().neurons
+						select new NeuronLinkUnit
+						{
+							back		= node,
+							forward		= null,
+							weight	= 1.0f
+						}
+						;
+				foreach( var link in q )
+				{
+					link.back.forwards = new NeuronLinkUnit[]{ link };
+				}
 			}
 		}
 	}
