@@ -11,18 +11,21 @@ public class NeuronUnitView : MonoBehaviour
 	
 	Renderer				nodeRenderer;
 	MaterialPropertyBlock	mpb;
-	static readonly int		colorNameId = Shader.PropertyToID( "_Color" );
 
-    // Start is called before the first frame update
-    void Start()
-    {
-				this.mpb		= new MaterialPropertyBlock();
-        
-    }
+	readonly int	colorPropId = Shader.PropertyToID( "_Color" );
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+
+	public void Init( NeuronUnit n )
+	{
+		this.value	= n;
+		this.mpb	= new MaterialPropertyBlock();
+		this.nodeRenderer	= GetComponent<LineRenderer>();
     }
+	
+	void OnOnWillRenderObject()
+	{
+		this.mpb.SetColor( this.colorPropId, this.value.activation.ToColor() );
+		this.nodeRenderer.SetPropertyBlock( this.mpb );
+	}
+	
 }

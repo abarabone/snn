@@ -10,24 +10,24 @@ namespace a
 	[Serializable]
 	public class NeuronUnit
 	{
-		public NeuronLinkUnit[]	forwards;
-		public NeuronLinkUnit[]	backs;
+		public NeuronLinkUnit[]	forwards	= new NeuronLinkUnit [0];
+		public NeuronLinkUnit[]	backs		= new NeuronLinkUnit [0];
 
 		public float	bias;
 		public float	activation;
-		public float	sum_value;
+		//public float	sum_value;
 
 		public Func<float, float>	f;
 		public Func<float, float>	d;
-
+		
 		public readonly float	learning_rate	= 0.3f;
 
 		public void activate()
 		{ 
-			this.sum_value = this.backs
+			var sum_value = this.backs
 				.Sum( link => link.weight * link.back.activation )
 				;
-			this.activation = this.f( this.sum_value );
+			this.activation = this.f( sum_value + this.bias );
 		}
 
 		public void learn()
@@ -62,6 +62,13 @@ namespace a
 					this.bias			+= modify;
 				}
 			}
+		}
+		float __delta_value;
+		void learn2()
+		{
+			var sum_delta = this.forwards
+				.Sum( link => link.weight * link.forward.__delta_value )
+				;
 		}
 
 		public void caluclate_delta_value( float correct_value )

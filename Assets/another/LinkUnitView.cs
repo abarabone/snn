@@ -9,25 +9,32 @@ public class LinkUnitView : MonoBehaviour
 	[SerializeField]
 	NeuronLinkUnit	value;
 
+	LineRenderer	linkRenderer;
+	MaterialPropertyBlock	mpb;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-	}
-	public void Init(  )
+	readonly int	colorPropId = Shader.PropertyToID( "_Color" );
+
+
+	public void Init( NeuronLinkUnit link, NeuronUnitView startNode, NeuronUnitView endNode )
+	{
 		var tf	= this.transform;
 		var r	= this.GetComponent<LineRenderer>();
-		r.material		= tf.parent.GetComponent<Renderer>().material;
+
 		r.positionCount = 2;
-		r.SetPosition( 0, this.value.forward. );
-		r.SetPosition( 1, end );
+		r.SetPosition( 0, startNode.transform.position );
+		r.SetPosition( 1, endNode.transform.position );
 		r.startWidth	= 0.05f;
 		r.endWidth		= 0.05f;
+
+		this.value	= link;
+		this.mpb	= new MaterialPropertyBlock();
+		this.linkRenderer	= r;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
+	void OnOnWillRenderObject()
+	{
+		this.mpb.SetColor( this.colorPropId, this.value.weight.ToColor() );
+		this.linkRenderer.SetPropertyBlock( this.mpb );
+	}
+	
 }
