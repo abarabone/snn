@@ -7,7 +7,7 @@ using System.Linq;
 namespace a
 {
 	
-	[Serializable]
+	//[Serializable]
 	public class NeuronUnit
 	{
 		public NeuronLinkUnit[]	forwards	= new NeuronLinkUnit [0];
@@ -83,7 +83,7 @@ namespace a
 		}
 	}
 
-	[Serializable]
+	//[Serializable]
 	public class NeuronLinkUnit
 	{
 		public NeuronUnit	back;
@@ -93,14 +93,23 @@ namespace a
 		public float	delta_weighted;
 	}
 	
-	[Serializable]
+	//[Serializable]
 	public class LayerUnit
 	{
 		public NeuronUnit[]	neurons;
-		public LayerUnit( int length ) => this.neurons = Enumerable.Repeat( new NeuronUnit(), length ).ToArray();
+		public LayerUnit( int length )
+		{
+			var q = from i in Enumerable.Range( 0, length )
+					select new NeuronUnit
+					{
+						bias	= UnityEngine.Random.value
+					}
+					;
+			this.neurons = q.ToArray();
+		}
 	}
 	
-	[Serializable]
+	//[Serializable]
 	public class N
 	{
 		public LayerUnit[]	layers;

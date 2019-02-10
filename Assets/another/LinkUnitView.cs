@@ -5,9 +5,8 @@ using a;
 
 public class LinkUnitView : MonoBehaviour
 {
-
-	[SerializeField]
-	NeuronLinkUnit	value;
+	
+	public NeuronLinkUnit	value;
 
 	LineRenderer	linkRenderer;
 	MaterialPropertyBlock	mpb;
@@ -31,7 +30,7 @@ public class LinkUnitView : MonoBehaviour
 		this.linkRenderer	= r;
     }
 
-	void OnOnWillRenderObject()
+	void OnWillRenderObject()
 	{
 		this.mpb.SetColor( this.colorPropId, this.value.weight.ToColor() );
 		this.linkRenderer.SetPropertyBlock( this.mpb );
