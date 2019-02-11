@@ -23,8 +23,9 @@ namespace a
 		public readonly float	learning_rate	= 0.3f;
 
 		public void activate()
-		{ 
+		{Debug.Log("a:"+this.activation);
 			var sum_value = this.backs
+				.Select( x => {Debug.Log(x);return x;} )
 				.Sum( link => link.weight * link.back.activation )
 				;
 			this.activation = this.f( sum_value + this.bias );
@@ -78,7 +79,7 @@ namespace a
 
 		public NeuronUnit()
 		{
-			this.f = sum_value => 1.0f / ( 1.0f + (float)Math.Exp((float)-sum_value) );
+			this.f = sum_value => sum_value;//1.0f / ( 1.0f + (float)Math.Exp((float)-sum_value) );
 			this.d = activation => activation * ( 1.0f - activation );
 		}
 	}
@@ -102,7 +103,8 @@ namespace a
 			var q = from i in Enumerable.Range( 0, length )
 					select new NeuronUnit
 					{
-						bias	= UnityEngine.Random.value
+						activation	= 0.0f,
+						bias		= UnityEngine.Random.value
 					}
 					;
 			this.neurons = q.ToArray();
@@ -130,15 +132,15 @@ namespace a
 
 		public void propergate_forward()
 		{
-			foreach( var n in layers.SelectMany( layer => layer.neurons ) )
+			foreach( var n in layers.Skip(1).SelectMany( layer => layer.neurons ) )
 			//foreach( var n in from layer in this.layers from n in layer.neurons select n )
 			{
-				n.activate();
+				n.activate();Debug.Log(n.activation);
 			}
 		}
 		public void propergate_back()
 		{
-			foreach( var n in layers.Reverse<LayerUnit>().SelectMany( layer => layer.neurons ) )
+			foreach( var n in layers.Skip(1).Reverse<LayerUnit>().SelectMany( layer => layer.neurons ) )
 			//foreach( var n in from layer in this.layers.Reverse<LayerUnit>() from n in layer.neurons select n )
 			{
 				n.learn();
@@ -147,7 +149,7 @@ namespace a
 
 		private void init_links()
 		{
-			this.layers.Aggregate( (prev_layer, next_layer) => set_links_to_both_side_nodes_( prev_layer, next_layer ) );
+			this.layers.Aggregate( (prev_layer, next_layer) => set_links_to_both_side_nodes_(prev_layer, next_layer) );
 
 			set_links_output_terminate_();
 
@@ -161,9 +163,9 @@ namespace a
 						from nn in next_layer.neurons
 						select new NeuronLinkUnit
 						{
-							back		= pn,
-							forward		= nn,
-							weight	= UnityEngine.Random.value,
+							back	= pn,
+							forward	= nn,
+							weight	= 1.0f//UnityEngine.Random.value,
 						}
 						;
 				var neuron_pairs = q.ToArray();

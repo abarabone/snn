@@ -25,6 +25,8 @@ public class NnView : MonoBehaviour
 		create_node_views_();
 		create_link_views_();
 
+		this.value.propergate_forward();
+
 		return;
 
 
@@ -35,13 +37,14 @@ public class NnView : MonoBehaviour
 
 		void create_node_views_()
 		{
-			var q_nodes = from l in this.value.layers.Select( (x,i) => (x,i) )
-						  from n in l.x.neurons.Select( (x,i) => (x,i) )
-						  let pos = new Vector3( 0.0f, n.i * this.NodeViewDistance, l.i * this.LayerViewDistance )
-						  select (
-							value:	n.x,
-							view:	Instantiate( this.NeuronViewTemplate, pos, Quaternion.identity )
-						  );
+			var q_nodes =
+				from l in this.value.layers.Select( (x,i) => (x,i) )
+				from n in l.x.neurons.Select( (x,i) => (x,i) )
+				let pos = new Vector3( 0.0f, n.i * this.NodeViewDistance, l.i * this.LayerViewDistance )
+				select (
+					value:	n.x,
+					view:	Instantiate( this.NeuronViewTemplate, pos, Quaternion.identity )
+				);
 			foreach( var n in q_nodes )
 			{
 				n.view.Init( n.value );
@@ -57,17 +60,18 @@ public class NnView : MonoBehaviour
 				.ToDictionary( keySelector: nv => nv.value, elementSelector: nv => nv )
 				;
 
-			var q_links = from nv in node_view_dict.Values
-						  from x in nv.value.forwards
-						  where x.back != null && x.forward != null
-						  let nv_st	= node_view_dict[ x.back ]
-						  let nv_ed	= node_view_dict[ x.forward ]
-						  select (
-							value:	x,
-							view:	Instantiate( this.LinkViewTemplate, nv_st.transform.position, Quaternion.identity ),
-							nv_st,
-							nv_ed
-						  );
+			var q_links =
+				from nv in node_view_dict.Values
+				from x in nv.value.forwards
+				where x.back != null && x.forward != null
+				let nv_st	= node_view_dict[ x.back ]
+				let nv_ed	= node_view_dict[ x.forward ]
+				select (
+					value:	x,
+					view:	Instantiate( this.LinkViewTemplate, nv_st.transform.position, Quaternion.identity ),
+					nv_st,
+					nv_ed
+				);
 			foreach( var link in q_links )
 			{
 				link.view.Init( link.value, link.nv_st, link.nv_ed );
