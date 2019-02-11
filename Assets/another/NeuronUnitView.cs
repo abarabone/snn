@@ -5,9 +5,8 @@ using a;
 
 public class NeuronUnitView : MonoBehaviour
 {
-
-	[SerializeField]
-	NeuronUnit	value;
+	
+	public NeuronUnit	value;
 	
 	Renderer				nodeRenderer;
 	MaterialPropertyBlock	mpb;
@@ -19,10 +18,10 @@ public class NeuronUnitView : MonoBehaviour
 	{
 		this.value	= n;
 		this.mpb	= new MaterialPropertyBlock();
-		this.nodeRenderer	= GetComponent<LineRenderer>();
+		this.nodeRenderer	= GetComponent<Renderer>();
     }
 	
-	void OnOnWillRenderObject()
+	void OnWillRenderObject()
 	{
 		this.mpb.SetColor( this.colorPropId, this.value.activation.ToColor() );
 		this.nodeRenderer.SetPropertyBlock( this.mpb );

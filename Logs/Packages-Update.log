@@ -41,3 +41,14 @@ The following packages were 追加済:
   com.unity.modules.vr@1.0.0
   com.unity.modules.wind@1.0.0
   com.unity.modules.xr@1.0.0
+
+=== Mon Feb 11 03:29:51 2019
+
+Packages were changed.
+Update Mode: updateDependencies
+
+The following packages were 追加済:
+  com.unity.timeline@1.0.0
+  com.unity.xr.legacyinputhelpers@1.0.0
+The following packages were 更新済:
+  com.unity.package-manager-ui をバージョン 2.0.3 から 2.1.1 へ
