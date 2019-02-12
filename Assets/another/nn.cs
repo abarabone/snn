@@ -7,7 +7,7 @@ using System.Linq;
 namespace a
 {
 	
-	//[Serializable]
+	[Serializable]
 	public class NeuronUnit
 	{
 		public NeuronLinkUnit[]	forwards	= new NeuronLinkUnit [0];
@@ -23,12 +23,12 @@ namespace a
 		public readonly float	learning_rate	= 0.3f;
 
 		public void activate()
-		{Debug.Log("a:"+this.activation);
+		{Debug.Log("a:"+this.activation+" "+this.backs.Length);
 			var sum_value = this.backs
-				.Select( x => {Debug.Log(x);return x;} )
+				.Select( x => {Debug.Log(x.back.activation+" "+x.forward.activation);return x;} )
 				.Sum( link => link.weight * link.back.activation )
 				;
-			this.activation = this.f( sum_value + this.bias );
+			this.activation = this.f( sum_value - this.bias );
 		}
 
 		public void learn()
@@ -79,12 +79,12 @@ namespace a
 
 		public NeuronUnit()
 		{
-			this.f = sum_value => sum_value;//1.0f / ( 1.0f + (float)Math.Exp((float)-sum_value) );
+			this.f = sum_value => 1.0f / ( 1.0f + (float)Math.Exp((float)-sum_value) );
 			this.d = activation => activation * ( 1.0f - activation );
 		}
 	}
 
-	//[Serializable]
+	[Serializable]
 	public class NeuronLinkUnit
 	{
 		public NeuronUnit	back;
@@ -94,7 +94,7 @@ namespace a
 		public float	delta_weighted;
 	}
 	
-	//[Serializable]
+	[Serializable]
 	public class LayerUnit
 	{
 		public NeuronUnit[]	neurons;
@@ -111,7 +111,7 @@ namespace a
 		}
 	}
 	
-	//[Serializable]
+	[Serializable]
 	public class N
 	{
 		public LayerUnit[]	layers;
@@ -135,7 +135,7 @@ namespace a
 			foreach( var n in layers.Skip(1).SelectMany( layer => layer.neurons ) )
 			//foreach( var n in from layer in this.layers from n in layer.neurons select n )
 			{
-				n.activate();Debug.Log(n.activation);
+				n.activate();
 			}
 		}
 		public void propergate_back()
@@ -165,7 +165,7 @@ namespace a
 						{
 							back	= pn,
 							forward	= nn,
-							weight	= 1.0f//UnityEngine.Random.value,
+							weight	= UnityEngine.Random.value,
 						}
 						;
 				var neuron_pairs = q.ToArray();
@@ -175,7 +175,7 @@ namespace a
 				}
 				foreach( var next_group in from n in neuron_pairs group n by n.forward )
 				{
-					next_group.Key.forwards = next_group.ToArray();
+					next_group.Key.backs = next_group.ToArray();
 				}
 				return next_layer;
 			}
@@ -187,8 +187,8 @@ namespace a
 				var q = from node in layers.Last().neurons
 						select new NeuronLinkUnit
 						{
-							back		= node,
-							forward		= null,
+							back	= node,
+							forward	= null,
 							weight	= 1.0f
 						}
 						;
