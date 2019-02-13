@@ -23,12 +23,14 @@ namespace a
 		public readonly float	learning_rate	= 0.3f;
 
 		public void activate()
-		{Debug.Log("a:"+this.activation+" "+this.backs.Length);
+		{
+			Debug.Log("a0:"+this.activation+" "+this.backs.Length);
 			var sum_value = this.backs
-				.Select( x => {Debug.Log(x.back.activation+" "+x.forward.activation);return x;} )
+			//	.Select( x => {Debug.Log(x.back.activation+" "+x.forward.activation);return x;} )
 				.Sum( link => link.weight * link.back.activation )
 				;
-			this.activation = this.f( sum_value - this.bias );
+			this.activation = this.f( sum_value + this.bias );
+			Debug.Log("a1:"+this.activation+" "+this.backs.Length);
 		}
 
 		public void learn()
@@ -144,6 +146,29 @@ namespace a
 			//foreach( var n in from layer in this.layers.Reverse<LayerUnit>() from n in layer.neurons select n )
 			{
 				n.learn();
+			}
+		}
+
+		public void set_input_values( float[] input_values )
+		{
+			var input_nodes = this.layers.First().neurons;
+			var q = from x in Enumerable.Zip( input_values, input_nodes, (v, n) => (v, n) )
+					select ( input_value: x.v, node: x.n )
+					;
+			foreach( var x in q )
+			{
+				x.node.activation = x.input_value;
+			}
+		}
+		public void set_correct_values( float[] correct_values )
+		{
+			var output_nodes = this.layers.Last().neurons;
+			var q = from x in Enumerable.Zip( correct_values, output_nodes, (c, n) => (c, n) )
+					select ( correct_value: x.c, node: x.n )
+					;
+			foreach( var x in q )
+			{
+				x.node.caluclate_delta_value( x.correct_value );
 			}
 		}
 

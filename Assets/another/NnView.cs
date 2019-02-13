@@ -17,19 +17,18 @@ public class NnView : MonoBehaviour
 
 	[SerializeField]
 	public N	value;
-	
-    void Start()
-    {
+
+
+	void Awake()
+	{
 		var tf	= transform;
 		create_nn_view_();
 		create_node_views_();
 		create_link_views_();
 
-		this.value.propergate_forward();
-
 		return;
 
-
+		
 		void create_nn_view_()
 		{
 			this.value	= new N( this.NeuronLengthPerLayers );
@@ -78,8 +77,34 @@ public class NnView : MonoBehaviour
 				link.view.transform.SetParent( tf, worldPositionStays:true );
 			}
 		}
+	}
+
+	void Start()
+    {
+		Teaching( 1000 );
+
+		this.value.propergate_forward();
     }
 	
+	void Teaching( int freq )
+	{
+		foreach( var i in Enumerable.Range(0, freq) )
+		{
+			var rnds = make_random_values_( this.value.layers.First().neurons.Length );
+			this.value.set_input_values( rnds );
+			this.value.propergate_forward();
+
+			this.value.set_correct_values( new[] { rnds.Sum() >= 3.0f ? 1.0f : 0.0f } );
+			this.value.propergate_back();
+		}
+		return;
+
+		float[] make_random_values_( int length )
+		{
+			Random.InitState( length );
+			return Enumerable.Range(0, length).Select( i => Random.value > 0.5f ? 1.0f : 0.0f ).ToArray();
+		}
+	}
 }
 
 
