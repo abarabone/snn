@@ -10,8 +10,8 @@ namespace a
 	[Serializable]
 	public class NeuronUnit
 	{
-		public NeuronLinkUnit[]	forwards	= new NeuronLinkUnit [0];
-		public NeuronLinkUnit[]	backs		= new NeuronLinkUnit [0];
+		public NeuronLinkUnit[]	forwards	= new NeuronLinkUnit [] { };
+		public NeuronLinkUnit[]	backs		= new NeuronLinkUnit [] { };
 
 		public float	bias;
 		public float	activation;
@@ -24,13 +24,13 @@ namespace a
 
 		public void activate()
 		{
-			Debug.Log("a0:"+this.activation+" "+this.backs.Length);
+			//Debug.Log("a0:"+this.activation+" "+this.backs.Length);
 			var sum_value = this.backs
 			//	.Select( x => {Debug.Log(x.back.activation+" "+x.forward.activation);return x;} )
 				.Sum( link => link.weight * link.back.activation )
 				;
 			this.activation = this.f( sum_value + this.bias );
-			Debug.Log("a1:"+this.activation+" "+this.backs.Length);
+			Debug.Log( $"a:{this.activation} b:{this.bias} {this.GetHashCode()}" );
 		}
 
 		public void learn()
@@ -39,7 +39,8 @@ namespace a
 			var delta_value = retrieve_delta_from_forwards_();
 
 			modify_to_backs_( delta_value );
-			
+
+			//Debug.Log( $"a:{this.activation} b:{this.bias} {this.GetHashCode()}" );
 			return;
 
 
@@ -61,8 +62,9 @@ namespace a
 				foreach( var (modify, link) in Enumerable.Zip(modify_for_backs, this.backs, (x,y) => (x,y)) )
 				{
 					link.delta_weighted	= link.weight * delta_value;// 更新前の重みを使用する。
-					link.weight			+= modify;
-					this.bias			+= modify;
+					link.weight			-= modify;
+					this.bias			-= modify;
+					//Debug.Log( $"w:{link.weight} b:{this.bias} {link.GetHashCode()}" );
 				}
 			}
 		}
@@ -76,7 +78,7 @@ namespace a
 
 		public void caluclate_delta_value( float correct_value )
 		{
-			this.forwards[0].delta_weighted	= correct_value - this.activation;
+			this.forwards[0].delta_weighted	= this.activation - correct_value;
 		}
 
 		public NeuronUnit()
@@ -152,9 +154,7 @@ namespace a
 		public void set_input_values( float[] input_values )
 		{
 			var input_nodes = this.layers.First().neurons;
-			var q = from x in Enumerable.Zip( input_values, input_nodes, (v, n) => (v, n) )
-					select ( input_value: x.v, node: x.n )
-					;
+			var q = Enumerable.Zip( input_values, input_nodes, (v, n) => (input_value:v, node:n) );
 			foreach( var x in q )
 			{
 				x.node.activation = x.input_value;
@@ -163,9 +163,7 @@ namespace a
 		public void set_correct_values( float[] correct_values )
 		{
 			var output_nodes = this.layers.Last().neurons;
-			var q = from x in Enumerable.Zip( correct_values, output_nodes, (c, n) => (c, n) )
-					select ( correct_value: x.c, node: x.n )
-					;
+			var q = Enumerable.Zip( correct_values, output_nodes, (c, n) => (correct_value:c, node:n) );
 			foreach( var x in q )
 			{
 				x.node.caluclate_delta_value( x.correct_value );

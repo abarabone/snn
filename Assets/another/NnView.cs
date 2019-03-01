@@ -43,12 +43,14 @@ public class NnView : MonoBehaviour
 				select (
 					value:	n.x,
 					view:	Instantiate( this.NeuronViewTemplate, pos, Quaternion.identity )
-				);
+				)
+				;
 			foreach( var n in q_nodes )
 			{
+				var ntf	= n.view.transform;
 				n.view.Init( n.value );
-				n.view.transform.SetParent( tf, worldPositionStays:true );
-				n.view.name = n.view.transform.position.y.ToString() + n.view.transform.position.z.ToString();
+				ntf.SetParent( tf, worldPositionStays:true );
+				n.view.name = $"{ntf.position.z / this.LayerViewDistance} : {ntf.position.y / this.NodeViewDistance}";
 			}
 		}
         
@@ -70,11 +72,13 @@ public class NnView : MonoBehaviour
 					view:	Instantiate( this.LinkViewTemplate, nv_st.transform.position, Quaternion.identity ),
 					nv_st,
 					nv_ed
-				);
+				)
+				;
 			foreach( var link in q_links )
 			{
 				link.view.Init( link.value, link.nv_st, link.nv_ed );
 				link.view.transform.SetParent( tf, worldPositionStays:true );
+				link.view.name = $"{node_view_dict[link.value.back].name} - {node_view_dict[link.value.forward].name}";
 			}
 		}
 	}
