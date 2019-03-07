@@ -56,16 +56,18 @@ namespace a
 			/// 入力側へδを伝える。
 			void modify_to_backs_( float delta_value_ )
 			{
-				var modify_for_backs = this.backs
-					.Select( link => delta_value_ * link.back.activation * this.learning_rate )
-					;
-				foreach( var (modify, link) in Enumerable.Zip(modify_for_backs, this.backs, (x,y) => (x,y)) )
+				//var modify_for_backs = this.backs
+				//	//.Select( link => delta_value_ * link.back.activation * this.learning_rate )
+				//	.Select( link => delta_value_ * this.learning_rate )
+				//	;
+				//foreach( var (modify, link) in Enumerable.Zip(modify_for_backs, this.backs, (x,y) => (x,y)) )
+				foreach( var link in this.backs )
 				{
-					link.delta_weighted	= link.weight * delta_value;// 更新前の重みを使用する。
-					link.weight			-= modify;
-					this.bias			-= modify;
+					link.delta_weighted	= link.weight * delta_value_;// 更新前の重みを使用する。
+					link.weight			-= delta_value_ * link.back.activation * this.learning_rate;
 					//Debug.Log( $"w:{link.weight} b:{this.bias} {link.GetHashCode()}" );
 				}
+					this.bias			-= delta_value_ * this.learning_rate;
 			}
 		}
 		float __delta_value;
@@ -154,19 +156,19 @@ namespace a
 		public void set_input_values( float[] input_values )
 		{
 			var input_nodes = this.layers.First().neurons;
-			var q = Enumerable.Zip( input_values, input_nodes, (v, n) => (input_value:v, node:n) );
-			foreach( var x in q )
+			var q = Enumerable.Zip( input_values, input_nodes, (v, n) => (v, n) );
+			foreach( var (input_value, node) in q )
 			{
-				x.node.activation = x.input_value;
+				node.activation = input_value;
 			}
 		}
 		public void set_correct_values( float[] correct_values )
 		{
 			var output_nodes = this.layers.Last().neurons;
-			var q = Enumerable.Zip( correct_values, output_nodes, (c, n) => (correct_value:c, node:n) );
-			foreach( var x in q )
+			var q = Enumerable.Zip( correct_values, output_nodes, (c, n) => (c, n) );
+			foreach( var (correct_value, node) in q )
 			{
-				x.node.caluclate_delta_value( x.correct_value );
+				node.caluclate_delta_value( correct_value );
 			}
 		}
 

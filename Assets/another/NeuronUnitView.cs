@@ -29,7 +29,7 @@ public class NeuronUnitView : MonoBehaviour
 
 	private void OnMouseDown()
 	{
-		this.value.activation = this.value.activation > 0.5f ? 0.0f : 1.0f;
+		this.value.activation = this.value.activation >= 0.5f ? 0.0f : 1.0f;
 		transform.GetComponentInParent<NnView>().value.propergate_forward();
 	}
 }

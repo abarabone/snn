@@ -106,7 +106,7 @@ public class NnView : MonoBehaviour
 		float[] make_random_values_( int length )
 		{
 			Random.InitState( length );
-			return Enumerable.Range(0, length).Select( i => Random.value > 0.5f ? 1.0f : 0.0f ).ToArray();
+			return Enumerable.Range(0, length).Select( i => Random.value >= 0.5f ? 1.0f : 0.0f ).ToArray();
 		}
 	}
 }
