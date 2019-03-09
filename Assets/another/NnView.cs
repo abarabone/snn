@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
-using a;
+using nn;
 
 public class NnView : MonoBehaviour
 {
 
 	public int[]	NeuronLengthPerLayers;
+	public ActivationFunction[]	funcs;
 
 	public NeuronUnitView	NeuronViewTemplate;
 	public LinkUnitView		LinkViewTemplate;
@@ -31,7 +32,7 @@ public class NnView : MonoBehaviour
 		
 		void create_nn_view_()
 		{
-			this.value	= new N( this.NeuronLengthPerLayers );
+			this.value	= new N( this.NeuronLengthPerLayers, funcs.Select( x => x.GetActivationFunction() ) );
 		}
 
 		void create_node_views_()
@@ -85,7 +86,7 @@ public class NnView : MonoBehaviour
 
 	void Start()
     {
-		Teaching( 1000 );
+		Teaching( 500000 );
 
 		this.value.propergate_forward();
     }
@@ -98,14 +99,14 @@ public class NnView : MonoBehaviour
 			this.value.set_input_values( rnds );
 			this.value.propergate_forward();
 
-			this.value.set_correct_values( new[] { rnds.Sum() >= 3.0f ? 1.0f : 0.0f } );
+			//Debug.Log( $"{rnds.Sum()} {this.value.layers.Last().neurons.First().activation}" );
+			this.value.set_correct_values( new[] { rnds.Sum() >= rnds.Length * 0.5f ? 1.0f : 0.0f } );
 			this.value.propergate_back();
 		}
 		return;
 
 		float[] make_random_values_( int length )
 		{
-			Random.InitState( length );
 			return Enumerable.Range(0, length).Select( i => Random.value >= 0.5f ? 1.0f : 0.0f ).ToArray();
 		}
 	}

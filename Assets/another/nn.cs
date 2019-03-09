@@ -4,7 +4,7 @@ using UnityEngine;
 using System;
 using System.Linq;
 
-namespace a
+namespace nn
 {
 	
 	[Serializable]
@@ -15,22 +15,22 @@ namespace a
 
 		public float	bias;
 		public float	activation;
-		//public float	sum_value;
+		public float	sum_value;
 
-		public Func<float, float>	f;
-		public Func<float, float>	d;
+		public Func<float, float>			f;
+		public Func<float, float, float>	d;
 		
 		public readonly float	learning_rate	= 0.3f;
 
 		public void activate()
 		{
 			//Debug.Log("a0:"+this.activation+" "+this.backs.Length);
-			var sum_value = this.backs
+			this.sum_value = this.backs
 			//	.Select( x => {Debug.Log(x.back.activation+" "+x.forward.activation);return x;} )
-				.Sum( link => link.weight * link.back.activation )
+				.Sum( link => link.weight * link.back.activation ) + this.bias
 				;
-			this.activation = this.f( sum_value + this.bias );
-			Debug.Log( $"a:{this.activation} b:{this.bias} {this.GetHashCode()}" );
+			this.activation = this.f( this.sum_value );
+			//Debug.Log( $"a:{this.activation} b:{this.bias} {this.GetHashCode()}" );
 		}
 
 		public void learn()
@@ -50,24 +50,19 @@ namespace a
 				var sum_delta_forwards = this.forwards
 					.Sum( link => link.delta_weighted )
 					;
-				return sum_delta_forwards * this.d( this.activation );
+				return sum_delta_forwards * this.d( this.sum_value, this.activation );
 			}
 
 			/// 入力側へδを伝える。
 			void modify_to_backs_( float delta_value_ )
 			{
-				//var modify_for_backs = this.backs
-				//	//.Select( link => delta_value_ * link.back.activation * this.learning_rate )
-				//	.Select( link => delta_value_ * this.learning_rate )
-				//	;
-				//foreach( var (modify, link) in Enumerable.Zip(modify_for_backs, this.backs, (x,y) => (x,y)) )
 				foreach( var link in this.backs )
 				{
 					link.delta_weighted	= link.weight * delta_value_;// 更新前の重みを使用する。
 					link.weight			-= delta_value_ * link.back.activation * this.learning_rate;
 					//Debug.Log( $"w:{link.weight} b:{this.bias} {link.GetHashCode()}" );
 				}
-					this.bias			-= delta_value_ * this.learning_rate;
+				this.bias	-= delta_value_ * this.learning_rate;
 			}
 		}
 		float __delta_value;
@@ -86,7 +81,28 @@ namespace a
 		public NeuronUnit()
 		{
 			this.f = sum_value => 1.0f / ( 1.0f + (float)Math.Exp((float)-sum_value) );
-			this.d = activation => activation * ( 1.0f - activation );
+			this.d = ( sum_value, activation ) => activation * ( 1.0f - activation );
+		}
+
+		public interface IActivationFunction
+		{
+			float f( float sum_value );
+			float d( float sum_value, float activation_value );
+		}
+		public struct Identity : IActivationFunction
+		{
+			public float f( float sum_value ) => sum_value;
+			public float d( float sum_value, float activation_value ) => 1.0f;
+		}
+		public struct sigmoid : IActivationFunction
+		{
+			public float f( float sum_value ) => 1.0f / ( 1.0f + (float)Math.Exp((float)-sum_value) );
+			public float d( float sum_value, float activation_value ) => activation_value * ( 1.0f - activation_value );
+		}
+		public struct ReLU : IActivationFunction
+		{
+			public float f( float sum_value ) => sum_value > 0.0f ? sum_value : 0.0f;
+			public float d( float sum_value, float activation_value ) => sum_value > 0.0f ? 1.0f : 0.0f;
 		}
 	}
 
@@ -104,13 +120,15 @@ namespace a
 	public class LayerUnit
 	{
 		public NeuronUnit[]	neurons;
-		public LayerUnit( int length )
+		public LayerUnit( int length, NeuronUnit.IActivationFunction actfunc )
 		{
 			var q = from i in Enumerable.Range( 0, length )
 					select new NeuronUnit
 					{
 						activation	= 0.0f,
-						bias		= UnityEngine.Random.value
+						bias		= UnityEngine.Random.value,
+						f = actfunc.f,
+						d = actfunc.d
 					}
 					;
 			this.neurons = q.ToArray();
@@ -122,16 +140,16 @@ namespace a
 	{
 		public LayerUnit[]	layers;
 
-		public N( int[] neuron_length_per_layers )
+		public N( IEnumerable<int> neuron_length_per_layers, IEnumerable<NeuronUnit.IActivationFunction> actfuncs )
 		{
-			create_layers( neuron_length_per_layers );
+			create_layers( neuron_length_per_layers, actfuncs );
 			init_links();
 		}
 
-		public void create_layers( int[] neuron_length_per_layers )
+		public void create_layers( IEnumerable<int> neuron_length_per_layers, IEnumerable<NeuronUnit.IActivationFunction> actfuncs )
 		{
-			this.layers = neuron_length_per_layers
-				.Select( num => new LayerUnit(num) )
+			this.layers = Enumerable.Zip( neuron_length_per_layers, actfuncs, (x,y)=>(num:x, func:y) )
+				.Select( x => new LayerUnit(x.num, x.func) )
 				.ToArray()
 				;
 		}
