@@ -18,7 +18,7 @@ public class ActivationFunction : MonoBehaviour
 		switch( FunctionType )
 		{
 			case ActivationFunctionType.identity:	return new NeuronUnit.Identity();
-			case ActivationFunctionType.sigmoid:	return new NeuronUnit.sigmoid();
+			case ActivationFunctionType.sigmoid:	return new NeuronUnit.Sigmoid();
 			case ActivationFunctionType.relu:		return new NeuronUnit.ReLU();
 		}
 		return null;

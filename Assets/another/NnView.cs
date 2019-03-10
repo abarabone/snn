@@ -16,9 +16,12 @@ public class NnView : MonoBehaviour
 	public float	LayerViewDistance;
 	public float	NodeViewDistance;
 
-	[SerializeField]
+	//[SerializeField]
+	[HideInInspector]
 	public N	value;
 
+	public int		learnFreq;
+	public float	learningRate;
 
 	void Awake()
 	{
@@ -84,15 +87,18 @@ public class NnView : MonoBehaviour
 		}
 	}
 
-	void Start()
+	void OnEnable()
     {
-		Teaching( 500000 );
+		Teaching( learnFreq );
 
 		this.value.propergate_forward();
     }
+
 	
-	void Teaching( int freq )
+	public void Teaching( int freq )
 	{
+		this.value.learning_rate = this.learningRate;
+
 		foreach( var i in Enumerable.Range(0, freq) )
 		{
 			var rnds = make_random_values_( this.value.layers.First().neurons.Length );
@@ -100,7 +106,7 @@ public class NnView : MonoBehaviour
 			this.value.propergate_forward();
 
 			//Debug.Log( $"{rnds.Sum()} {this.value.layers.Last().neurons.First().activation}" );
-			this.value.set_correct_values( new[] { rnds.Sum() >= rnds.Length * 0.5f ? 1.0f : 0.0f } );
+			this.value.set_correct_values( rnds );//new[] { rnds.Sum() >= rnds.Length * 0.5f ? 1.0f : 0.0f } );
 			this.value.propergate_back();
 		}
 		return;

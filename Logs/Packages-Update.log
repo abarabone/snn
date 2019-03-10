@@ -52,3 +52,11 @@ The following packages were 追加済:
   com.unity.xr.legacyinputhelpers@1.0.0
 The following packages were 更新済:
   com.unity.package-manager-ui をバージョン 2.0.3 から 2.1.1 へ
+
+=== Sun Mar 10 16:08:13 2019
+
+Packages were changed.
+Update Mode: updateDependencies
+
+The following packages were 更新済:
+  com.unity.analytics をバージョン 3.2.2 から 3.3.2 へ

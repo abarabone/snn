@@ -7,7 +7,7 @@ using System.Linq;
 namespace nn
 {
 	
-	[Serializable]
+	//[Serializable]
 	public class NeuronUnit
 	{
 		public NeuronLinkUnit[]	forwards	= new NeuronLinkUnit [] { };
@@ -20,8 +20,6 @@ namespace nn
 		public Func<float, float>			f;
 		public Func<float, float, float>	d;
 		
-		public readonly float	learning_rate	= 0.3f;
-
 		public void activate()
 		{
 			//Debug.Log("a0:"+this.activation+" "+this.backs.Length);
@@ -33,7 +31,7 @@ namespace nn
 			//Debug.Log( $"a:{this.activation} b:{this.bias} {this.GetHashCode()}" );
 		}
 
-		public void learn()
+		public void learn( float learning_rate )
 		{
 
 			var delta_value = retrieve_delta_from_forwards_();
@@ -59,10 +57,10 @@ namespace nn
 				foreach( var link in this.backs )
 				{
 					link.delta_weighted	= link.weight * delta_value_;// 更新前の重みを使用する。
-					link.weight			-= delta_value_ * link.back.activation * this.learning_rate;
+					link.weight			-= delta_value_ * link.back.activation * learning_rate;
 					//Debug.Log( $"w:{link.weight} b:{this.bias} {link.GetHashCode()}" );
 				}
-				this.bias	-= delta_value_ * this.learning_rate;
+				this.bias	-= delta_value_ * learning_rate;
 			}
 		}
 		float __delta_value;
@@ -89,24 +87,35 @@ namespace nn
 			float f( float sum_value );
 			float d( float sum_value, float activation_value );
 		}
-		public struct Identity : IActivationFunction
+		public class Identity : IActivationFunction
 		{
 			public float f( float sum_value ) => sum_value;
 			public float d( float sum_value, float activation_value ) => 1.0f;
 		}
-		public struct sigmoid : IActivationFunction
+		public class Sigmoid : IActivationFunction
 		{
 			public float f( float sum_value ) => 1.0f / ( 1.0f + (float)Math.Exp((float)-sum_value) );
-			public float d( float sum_value, float activation_value ) => activation_value * ( 1.0f - activation_value );
+			//public float d( float sum_value, float activation_value ) => activation_value * ( 1.0f - activation_value );
+			public float d( float sum_value, float activation_value ) => f(sum_value) * ( 1.0f - f(sum_value) );
 		}
-		public struct ReLU : IActivationFunction
+		public class ReLU : IActivationFunction
 		{
 			public float f( float sum_value ) => sum_value > 0.0f ? sum_value : 0.0f;
 			public float d( float sum_value, float activation_value ) => sum_value > 0.0f ? 1.0f : 0.0f;
 		}
+		public class SoftMax : IActivationFunction
+		{
+			public float f( float sum_value ) => 0.0f;
+			public float d( float sum_value, float activation_value ) => 0.0f;
+		}
+		public class Tanh : IActivationFunction
+		{
+			public float f( float sum_value ) => 0.0f;
+			public float d( float sum_value, float activation_value ) => 0.0f;
+		}
 	}
 
-	[Serializable]
+	//[Serializable]
 	public class NeuronLinkUnit
 	{
 		public NeuronUnit	back;
@@ -135,10 +144,12 @@ namespace nn
 		}
 	}
 	
-	[Serializable]
+	//[Serializable]
 	public class N
 	{
 		public LayerUnit[]	layers;
+		public float		learning_rate;
+
 
 		public N( IEnumerable<int> neuron_length_per_layers, IEnumerable<NeuronUnit.IActivationFunction> actfuncs )
 		{
@@ -167,7 +178,7 @@ namespace nn
 			foreach( var n in layers.Skip(1).Reverse<LayerUnit>().SelectMany( layer => layer.neurons ) )
 			//foreach( var n in from layer in this.layers.Reverse<LayerUnit>() from n in layer.neurons select n )
 			{
-				n.learn();
+				n.learn( this.learning_rate );
 			}
 		}
 
