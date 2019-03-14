@@ -13,6 +13,8 @@ public class ActivationFunction : MonoBehaviour
 		relu,
 		tanh,
 		softmax
+		relu,
+		aaa
 	}
 
 	public NeuronUnit.IActivationFunction GetActivationFunction()
@@ -24,6 +26,7 @@ public class ActivationFunction : MonoBehaviour
 			case ActivationFunctionType.relu:		return new NeuronUnit.ReLU();
 			case ActivationFunctionType.tanh:		return new NeuronUnit.Tanh();
 			case ActivationFunctionType.softmax:	return new NeuronUnit.SoftMax();
+			case ActivationFunctionType.aaa:		return new NeuronUnit.aaa();
 		}
 		return null;
 	}
