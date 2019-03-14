@@ -95,23 +95,39 @@ namespace nn
 		public class Sigmoid : IActivationFunction
 		{
 			public float f( float sum_value ) => 1.0f / ( 1.0f + (float)Math.Exp((float)-sum_value) );
-			//public float d( float sum_value, float activation_value ) => activation_value * ( 1.0f - activation_value );
-			public float d( float sum_value, float activation_value ) => f(sum_value) * ( 1.0f - f(sum_value) );
+			public float d( float sum_value, float activation_value ) => activation_value * ( 1.0f - activation_value );
+			//public float d( float sum_value, float activation_value ) => f(sum_value) * ( 1.0f - f(sum_value) );
 		}
 		public class ReLU : IActivationFunction
 		{
 			public float f( float sum_value ) => sum_value > 0.0f ? sum_value : 0.0f;
 			public float d( float sum_value, float activation_value ) => sum_value > 0.0f ? 1.0f : 0.0f;
 		}
-		public class SoftMax : IActivationFunction
-		{
-			public float f( float sum_value ) => 0.0f;
-			public float d( float sum_value, float activation_value ) => 0.0f;
-		}
 		public class Tanh : IActivationFunction
 		{
-			public float f( float sum_value ) => 0.0f;
-			public float d( float sum_value, float activation_value ) => 0.0f;
+			public float f( float sum_value )
+			{
+				var ex = Math.Exp( -2.0d * sum_value );
+				return (float)( ( 1.0d - ex ) / ( 1.0d + ex ) );
+			}
+			public float d( float sum_value, float activation_value )
+			{
+				var ee  = Math.Exp(sum_value) + Math.Exp(-sum_value);
+				return (float)( 4.0d / ( ee * ee ) );
+			}
+		}
+		public class SoftMax : IActivationFunction
+		{
+			public float f( float sum_value )
+			{
+				var ex = Math.Exp( -2.0d * sum_value );
+				return (float)( ( 1.0d - ex ) / ( 1.0d + ex ) );
+			}
+			public float d( float sum_value, float activation_value )
+			{
+				var ee  = Math.Exp(sum_value) + Math.Exp(-sum_value);
+				return (float)( 4.0d / ( ee * ee ) );
+			}
 		}
 	}
 
@@ -191,7 +207,7 @@ namespace nn
 				node.activation = input_value;
 			}
 		}
-		public void set_correct_values( float[] correct_values )
+		public void set_correct_values( IEnumerable<float> correct_values )
 		{
 			var output_nodes = this.layers.Last().neurons;
 			var q = Enumerable.Zip( correct_values, output_nodes, (c, n) => (c, n) );
