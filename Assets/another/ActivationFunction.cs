@@ -10,7 +10,8 @@ public class ActivationFunction : MonoBehaviour
 	{
 		identity,
 		sigmoid,
-		relu
+		relu,
+		aaa
 	}
 
 	public NeuronUnit.IActivationFunction GetActivationFunction()
@@ -20,6 +21,7 @@ public class ActivationFunction : MonoBehaviour
 			case ActivationFunctionType.identity:	return new NeuronUnit.Identity();
 			case ActivationFunctionType.sigmoid:	return new NeuronUnit.Sigmoid();
 			case ActivationFunctionType.relu:		return new NeuronUnit.ReLU();
+			case ActivationFunctionType.aaa:		return new NeuronUnit.aaa();
 		}
 		return null;
 	}

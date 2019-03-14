@@ -16,6 +16,7 @@ namespace nn
 		public float	bias;
 		public float	activation;
 		public float	sum_value;
+		public float	propergated_value;
 
 		public Func<float, float>			f;
 		public Func<float, float, float>	d;
@@ -25,7 +26,8 @@ namespace nn
 			//Debug.Log("a0:"+this.activation+" "+this.backs.Length);
 			this.sum_value = this.backs
 			//	.Select( x => {Debug.Log(x.back.activation+" "+x.forward.activation);return x;} )
-				.Sum( link => link.weight * link.back.activation ) + this.bias
+				.Sum( link => link.weight * link.back.activation )
+				+ this.bias
 				;
 			this.activation = this.f( this.sum_value );
 			//Debug.Log( $"a:{this.activation} b:{this.bias} {this.GetHashCode()}" );
@@ -60,15 +62,27 @@ namespace nn
 					link.weight			-= delta_value_ * link.back.activation * learning_rate;
 					//Debug.Log( $"w:{link.weight} b:{this.bias} {link.GetHashCode()}" );
 				}
-				this.bias	-= delta_value_ * learning_rate;
+				this.bias	-= delta_value_ * this.backs.Length * learning_rate;
 			}
 		}
-		float __delta_value;
-		void learn2()
+		public void learn2( float learning_rate )
 		{
-			var sum_delta = this.forwards
-				.Sum( link => link.weight * link.forward.__delta_value )
-				;
+			var sum_forward_propergated_value = this.forwards
+				.Select( link => link.weight * link.forward.propergated_value )
+				.Sum();
+			
+			foreach( var link in this.forwards )
+			{
+				var modify = link.weight * link.forward.activation;
+				link.weight -= modify * learning_rate;
+			}
+
+			if( this.forwards.Length != 0 )
+			{
+				this.propergated_value = sum_forward_propergated_value * d( this.sum_value, this.activation );
+			}
+
+			this.bias -= this.propergated_value * learning_rate;
 		}
 
 		public void caluclate_delta_value( float correct_value )
@@ -112,6 +126,21 @@ namespace nn
 		{
 			public float f( float sum_value ) => 0.0f;
 			public float d( float sum_value, float activation_value ) => 0.0f;
+		}
+		public class aaa : IActivationFunction
+		{
+			public float f( float sum_value )
+			{
+				if( sum_value >=  0.75f ) return sum_value;
+				if( sum_value <= -0.75f ) return sum_value;
+				return 0.0f;
+			}
+			public float d( float sum_value, float activation_value )
+			{
+				if( sum_value >=  0.75f ) return 1.0f;
+				if( sum_value <= -0.75f ) return 1.0f;
+				return 0.0f;
+			}
 		}
 	}
 
