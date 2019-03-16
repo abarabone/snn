@@ -89,12 +89,7 @@ namespace nn
 		{
 			this.forwards[0].delta_weighted	= this.activation - correct_value;
 		}
-
-		public NeuronUnit()
-		{
-			this.f = sum_value => 1.0f / ( 1.0f + (float)Math.Exp((float)-sum_value) );
-			this.d = ( sum_value, activation ) => activation * ( 1.0f - activation );
-		}
+		
 
 		public interface IActivationFunction
 		{
@@ -108,7 +103,7 @@ namespace nn
 		}
 		public class Sigmoid : IActivationFunction
 		{
-			public float f( float sum_value ) => 1.0f / ( 1.0f + (float)Math.Exp((float)-sum_value) );
+			public float f( float sum_value ) => (float)(1.0d / ( 1.0d + Math.Exp(-sum_value) ));
 			public float d( float sum_value, float activation_value ) => activation_value * ( 1.0f - activation_value );
 			//public float d( float sum_value, float activation_value ) => f(sum_value) * ( 1.0f - f(sum_value) );
 		}

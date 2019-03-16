@@ -12,8 +12,7 @@ public class ActivationFunction : MonoBehaviour
 		sigmoid,
 		relu,
 		tanh,
-		softmax
-		relu,
+		softmax,
 		aaa
 	}
 
