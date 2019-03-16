@@ -84,6 +84,35 @@ namespace nn
 
 			this.bias -= this.propergated_value * learning_rate;
 		}
+		public void learn3( float learning_rate )
+		{
+			var delta_value = retrieve_delta_from_forwards_();
+
+			modify_to_backs_( delta_value );
+			
+			return;
+
+
+			/// 出力側から重みのかけられたδを取得し、合計する。
+			float retrieve_delta_from_forwards_()
+			{
+				var sum_delta_forwards = this.forwards
+					.Sum( link => link.delta_weighted )
+					;
+				return sum_delta_forwards * this.activation - ;
+			}
+
+			/// 入力側へδを伝える。
+			void modify_to_backs_( float delta_value_ )
+			{
+				foreach( var link in this.backs )
+				{
+					link.delta_weighted	= link.weight * delta_value_;// 更新前の重みを使用する。
+					link.weight			-= delta_value_ * link.back.activation * learning_rate;
+				}
+				this.bias	-= delta_value_ * this.backs.Length * learning_rate;
+			}
+		}
 
 		public void caluclate_delta_value( float correct_value )
 		{
@@ -243,6 +272,15 @@ namespace nn
 			foreach( var (correct_value, node) in q )
 			{
 				node.caluclate_delta_value( correct_value );
+			}
+		}
+		public void set_correct_values_cross_entropy( IEnumerable<float> correct_values )
+		{
+			var output_nodes = this.layers.Last().neurons;
+			var q = Enumerable.Zip( correct_values, output_nodes, (c, n) => (c, n) );
+			foreach( var (correct_value, node) in q )
+			{
+				node.forwards[0].delta_weighted = -( correct_value / node.activation ) + (1.0f-correct_value) / (1.0f-node.activation);
 			}
 		}
 

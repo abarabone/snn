@@ -106,8 +106,8 @@ public class NnView : MonoBehaviour
 			this.value.propergate_forward();
 
 			//Debug.Log( $"{rnds.Sum()} {this.value.layers.Last().neurons.First().activation}" );
-			//this.value.set_correct_values( rnds );
-			this.value.set_correct_values( new[] { rnds.Sum() >= rnds.Length * 0.5f ? 1.0f : 0.0f } );
+			this.value.set_correct_values( rnds );
+			//this.value.set_correct_values( new[] { rnds.Sum() >= rnds.Length * 0.5f ? 1.0f : 0.0f } );
 			this.value.propergate_back();
 		}
 		return;
