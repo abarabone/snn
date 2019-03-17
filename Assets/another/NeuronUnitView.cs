@@ -13,6 +13,7 @@ public class NeuronUnitView : MonoBehaviour
 
 	readonly int	colorPropId = Shader.PropertyToID( "_Color" );
 
+	public float act;
 
 	public void Init( NeuronUnit n )
 	{
@@ -23,6 +24,7 @@ public class NeuronUnitView : MonoBehaviour
 	
 	void OnWillRenderObject()
 	{
+		this.act = this.value.activation;
 		this.mpb.SetColor( this.colorPropId, this.value.activation.ToColor() );
 		this.nodeRenderer.SetPropertyBlock( this.mpb );
 	}

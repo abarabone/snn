@@ -23,20 +23,18 @@ namespace nn
 		
 		public void activate()
 		{
-			//Debug.Log("a0:"+this.activation+" "+this.backs.Length);
 			this.sum_value = this.backs
-			//	.Select( x => {Debug.Log(x.back.activation+" "+x.forward.activation);return x;} )
 				.Sum( link => link.weight * link.back.activation )
 				+ this.bias
 				;
 			this.activation = this.f( this.sum_value );
-			//Debug.Log( $"a:{this.activation} b:{this.bias} {this.GetHashCode()}" );
 		}
 
 		public void learn( float learning_rate )
 		{
 
 			var delta_value = retrieve_delta_from_forwards_();
+			if( float.IsNaN(delta_value) ) delta_value = 0.0f;//
 
 			modify_to_backs_( delta_value );
 
@@ -99,7 +97,7 @@ namespace nn
 				var sum_delta_forwards = this.forwards
 					.Sum( link => link.delta_weighted )
 					;
-				return sum_delta_forwards * this.activation - ;
+				return sum_delta_forwards * this.activation;// - ;
 			}
 
 			/// 入力側へδを伝える。
@@ -236,7 +234,7 @@ namespace nn
 
 		public void propergate_forward()
 		{
-			foreach( var n in layers.Skip(1).SelectMany( layer => layer.neurons ) )
+			foreach( var n in layers.Skip( 1 ).SelectMany( layer => layer.neurons ) )
 			//foreach( var n in from layer in this.layers from n in layer.neurons select n )
 			{
 				n.activate();
@@ -275,7 +273,8 @@ namespace nn
 			var q = Enumerable.Zip( correct_values, output_nodes, (c, n) => (c, n) );
 			foreach( var (correct_value, node) in q )
 			{
-				node.forwards[0].delta_weighted = -( correct_value / node.activation ) + (1.0f-correct_value) / (1.0f-node.activation);
+				node.forwards[ 0 ].delta_weighted = -( correct_value / node.activation ) + ( 1.0f - correct_value ) / ( 1.0f - node.activation );
+				if( float.IsNaN(node.forwards[ 0 ].delta_weighted) ) node.forwards[ 0 ].delta_weighted = 0.0f;
 			}
 		}
 
