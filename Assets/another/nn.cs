@@ -82,35 +82,6 @@ namespace nn
 
 			this.bias -= this.propergated_value * learning_rate;
 		}
-		public void learn3( float learning_rate )
-		{
-			var delta_value = retrieve_delta_from_forwards_();
-
-			modify_to_backs_( delta_value );
-			
-			return;
-
-
-			/// 出力側から重みのかけられたδを取得し、合計する。
-			float retrieve_delta_from_forwards_()
-			{
-				var sum_delta_forwards = this.forwards
-					.Sum( link => link.delta_weighted )
-					;
-				return sum_delta_forwards * this.activation;// - ;
-			}
-
-			/// 入力側へδを伝える。
-			void modify_to_backs_( float delta_value_ )
-			{
-				foreach( var link in this.backs )
-				{
-					link.delta_weighted	= link.weight * delta_value_;// 更新前の重みを使用する。
-					link.weight			-= delta_value_ * link.back.activation * learning_rate;
-				}
-				this.bias	-= delta_value_ * this.backs.Length * learning_rate;
-			}
-		}
 
 		public void caluclate_delta_value( float correct_value )
 		{
@@ -154,32 +125,51 @@ namespace nn
 		}
 		public class SoftMax : IActivationFunction
 		{
-			public float f( float sum_value )
-			{
-				var ex = Math.Exp( -2.0d * sum_value );
-				return (float)( ( 1.0d - ex ) / ( 1.0d + ex ) );
-			}
-			public float d( float sum_value, float activation_value )
-			{
-				var ee  = Math.Exp(sum_value) + Math.Exp(-sum_value);
-				return (float)( 4.0d / ( ee * ee ) );
-			}
+			public float f( float sum_value ) => throw new NotImplementedException();
+			public float d( float sum_value, float activation_value ) => throw new NotImplementedException();
 		}
 		public class aaa : IActivationFunction
 		{
 			public float f( float sum_value )
 			{
-				if( sum_value >=  0.75f ) return sum_value;
-				if( sum_value <= -0.75f ) return sum_value;
+				if( sum_value >=  0.5f ) return sum_value;
+				if( sum_value <= -0.5f ) return sum_value;
 				return 0.0f;
 			}
 			public float d( float sum_value, float activation_value )
 			{
-				if( sum_value >=  0.75f ) return 1.0f;
-				if( sum_value <= -0.75f ) return 1.0f;
+				if( sum_value >=  0.5f ) return 1.0f;
+				if( sum_value <= -0.5f ) return 1.0f;
 				return 0.0f;
 			}
 		}
+
+		public interface ILossFunction
+		{
+			float sum( IEnumerable<float> activations, float bias, IActivationFunction activation_function );
+			float f( IEnumerable<float> input_values, IEnumerable<float> correct_values );
+			float d( );
+		}
+		public class MSE : ILossFunction
+		{
+			public float d()
+			{
+				throw new NotImplementedException();
+			}
+			public float f( IEnumerable<float> input_values, IEnumerable<float> correct_values )
+			{
+				throw new NotImplementedException();
+			}
+			public float sum( IEnumerable<float> activations, float bias, IActivationFunction activation_function )
+			{
+				return activations.Sum() + bias;
+			}
+		}
+		public class CrossEntropy
+		{
+
+		}
+		public class CrossEntorypWith
 	}
 
 	//[Serializable]
