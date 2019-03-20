@@ -146,7 +146,7 @@ namespace nn
 
 		public interface ILossFunction
 		{
-			float sum( IEnumerable<float> activations, float bias, IActivationFunction activation_function );
+			float a( IEnumerable<float> activations, float bias, IActivationFunction activation_function );
 			float f( IEnumerable<float> input_values, IEnumerable<float> correct_values );
 			float d( );
 		}
@@ -160,16 +160,32 @@ namespace nn
 			{
 				throw new NotImplementedException();
 			}
-			public float sum( IEnumerable<float> activations, float bias, IActivationFunction activation_function )
+			public float a( IEnumerable<float> activations, float bias, IActivationFunction activation_function )
 			{
+				return activation_function.f( activations.Sum() + bias );
+			}
+		}
+		public class CrossEntropy : ILossFunction
+		{
+			public float d()
+			{
+				throw new NotImplementedException();
+			}
+			public float f( IEnumerable<float> input_values, IEnumerable<float> correct_values )
+			{
+				throw new NotImplementedException();
+			}
+			public float a( IEnumerable<float> activations, float bias, IActivationFunction activation_function )
+			{
+				switch( activation_function )
+				{
+					case Sigmoid	af:break;
+					case SoftMax	af:break;
+					case var		af:				return activation_function.f( activations.Sum() + bias );
+				}
 				return activations.Sum() + bias;
 			}
 		}
-		public class CrossEntropy
-		{
-
-		}
-		public class CrossEntorypWith
 	}
 
 	//[Serializable]
