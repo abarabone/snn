@@ -20,7 +20,9 @@ namespace nn
 
 		public Func<float, float>			f;
 		public Func<float, float, float>	d;
-		
+		public IActivationFunction	af;
+		public ILossFunction		lf;
+
 		public void activate()
 		{
 			this.sum_value = this.backs
@@ -91,27 +93,31 @@ namespace nn
 
 		public interface IActivationFunction
 		{
+
 			float f( float sum_value );
-			float d( float sum_value, float activation_value );
+			float d();
 		}
 		public class Identity : IActivationFunction
 		{
 			public float f( float sum_value ) => sum_value;
-			public float d( float sum_value, float activation_value ) => 1.0f;
+			public float d() => 1.0f;
 		}
 		public class Sigmoid : IActivationFunction
 		{
-			public float f( float sum_value ) => (float)(1.0d / ( 1.0d + Math.Exp(-sum_value) ));
-			public float d( float sum_value, float activation_value ) => activation_value * ( 1.0f - activation_value );
+			float	activation_;
+			public float f( float sum_value ) => this.activation_ = (float)(1.0d / ( 1.0d + Math.Exp(-sum_value) ));
+			public float d() => this.activation_ * ( 1.0f - this.activation_ );
 			//public float d( float sum_value, float activation_value ) => f(sum_value) * ( 1.0f - f(sum_value) );
 		}
 		public class ReLU : IActivationFunction
 		{
+			float	sum_value_;
 			public float f( float sum_value ) => sum_value > 0.0f ? sum_value : 0.0f;
 			public float d( float sum_value, float activation_value ) => sum_value > 0.0f ? 1.0f : 0.0f;
 		}
 		public class Tanh : IActivationFunction
 		{
+			float	sum_value_;
 			public float f( float sum_value )
 			{
 				var ex = Math.Exp( -2.0d * sum_value );
@@ -125,6 +131,8 @@ namespace nn
 		}
 		public class SoftMax : IActivationFunction
 		{
+			int	class_index_;
+			float	
 			public float f( float sum_value ) => throw new NotImplementedException();
 			public float d( float sum_value, float activation_value ) => throw new NotImplementedException();
 		}
