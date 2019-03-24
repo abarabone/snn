@@ -93,18 +93,27 @@ namespace nn
 
 		public interface IActivationFunction
 		{
-
+			float sum( IEnumerable<(float activation, float weight)> values, float bias );
 			float f( float sum_value );
 			float d();
 		}
 		public class Identity : IActivationFunction
 		{
+			public float sum( IEnumerable<(float activation, float weight)> values, float bias )
+			{
+				return values.Select( x => x.activation * x.weight ).Sum() + bias;
+			}
 			public float f( float sum_value ) => sum_value;
 			public float d() => 1.0f;
 		}
 		public class Sigmoid : IActivationFunction
 		{
 			float	activation_;
+
+			public float sum( IEnumerable<(float activation, float weight)> values, float bias )
+			{
+				return values.Select( x => x.activation * x.weight ).Sum() + bias;
+			}
 			public float f( float sum_value ) => this.activation_ = (float)(1.0d / ( 1.0d + Math.Exp(-sum_value) ));
 			public float d() => this.activation_ * ( 1.0f - this.activation_ );
 			//public float d( float sum_value, float activation_value ) => f(sum_value) * ( 1.0f - f(sum_value) );
@@ -112,42 +121,67 @@ namespace nn
 		public class ReLU : IActivationFunction
 		{
 			float	sum_value_;
-			public float f( float sum_value ) => sum_value > 0.0f ? sum_value : 0.0f;
-			public float d( float sum_value, float activation_value ) => sum_value > 0.0f ? 1.0f : 0.0f;
+			
+			public float sum( IEnumerable<(float activation, float weight)> values, float bias )
+			{
+				this.sum_value_ = values.Select( x => x.activation * x.weight ).Sum() + bias;
+				return this.sum_value_;
+			}
+			public float f( float sum_value ) => (this.sum_value_ = sum_value) > 0.0f ? sum_value : 0.0f;
+			public float d() => this.sum_value_ > 0.0f ? 1.0f : 0.0f;
 		}
 		public class Tanh : IActivationFunction
 		{
 			float	sum_value_;
+
+			public float sum( IEnumerable<(float activation, float weight)> values, float bias )
+			{
+				this.sum_value_ = values.Select( x => x.activation * x.weight ).Sum() + bias;
+				return this.sum_value_;
+			}
 			public float f( float sum_value )
 			{
+				this.sum_value_ = sum_value;
 				var ex = Math.Exp( -2.0d * sum_value );
 				return (float)( ( 1.0d - ex ) / ( 1.0d + ex ) );
 			}
-			public float d( float sum_value, float activation_value )
+			public float d()
 			{
-				var ee  = Math.Exp(sum_value) + Math.Exp(-sum_value);
+				var ee  = Math.Exp(this.sum_value_) + Math.Exp(-this.sum_value_);
 				return (float)( 4.0d / ( ee * ee ) );
 			}
 		}
 		public class SoftMax : IActivationFunction
 		{
-			int	class_index_;
-			float	
+			public int	class_index;
+			float		activation_;
+
+			public float sum( IEnumerable<(float activation, float weight)> values, float bias )
+			{
+				return values.Select( x => (float)Math.Exp(x.activation) ).Sum();
+			}
 			public float f( float sum_value ) => throw new NotImplementedException();
-			public float d( float sum_value, float activation_value ) => throw new NotImplementedException();
+			public float d() => this.activation_ * ( 1.0f - this.activation_ );
 		}
 		public class aaa : IActivationFunction
 		{
+			float	sum_value_;
+
+			public float sum( IEnumerable<(float activation, float weight)> values, float bias )
+			{
+				this.sum_value_ = values.Select( x => x.activation * x.weight ).Sum() + bias;
+				return this.sum_value_;
+			}
 			public float f( float sum_value )
 			{
-				if( sum_value >=  0.5f ) return sum_value;
-				if( sum_value <= -0.5f ) return sum_value;
+				if( this.sum_value_ >=  0.5f ) return sum_value;
+				if( this.sum_value_ <= -0.5f ) return sum_value;
 				return 0.0f;
 			}
-			public float d( float sum_value, float activation_value )
+			public float d()
 			{
-				if( sum_value >=  0.5f ) return 1.0f;
-				if( sum_value <= -0.5f ) return 1.0f;
+				if( this.sum_value_ >=  0.5f ) return 1.0f;
+				if( this.sum_value_ <= -0.5f ) return 1.0f;
 				return 0.0f;
 			}
 		}
