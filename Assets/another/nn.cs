@@ -15,21 +15,20 @@ namespace nn
 
 		public float	bias;
 		public float	activation;
-		public float	sum_value;
+		//public float	sum_value;
 		public float	propergated_value;
 
-		public Func<float, float>			f;
-		public Func<float, float, float>	d;
 		public IActivationFunction	af;
-		public ILossFunction		lf;
+		//public ILossFunction		lf;
 
 		public void activate()
 		{
-			this.sum_value = this.backs
-				.Sum( link => link.weight * link.back.activation )
-				+ this.bias
-				;
-			this.activation = this.f( this.sum_value );
+			//var sum_value = this.backs
+			//	.Sum( link => link.weight * link.back.activation )
+			//	+ this.bias
+			//	;
+			var sum_value = this.af.sum( this.backs.Select( link => (link.back.activation, link.weight) ), this.bias );
+			this.activation = this.af.f( sum_value );
 		}
 
 		public void learn( float learning_rate )
@@ -50,7 +49,7 @@ namespace nn
 				var sum_delta_forwards = this.forwards
 					.Sum( link => link.delta_weighted )
 					;
-				return sum_delta_forwards * this.d( this.sum_value, this.activation );
+				return sum_delta_forwards * this.af.d();
 			}
 
 			/// 入力側へδを伝える。
@@ -62,27 +61,27 @@ namespace nn
 					link.weight			-= delta_value_ * link.back.activation * learning_rate;
 					//Debug.Log( $"w:{link.weight} b:{this.bias} {link.GetHashCode()}" );
 				}
-				this.bias	-= delta_value_ * this.backs.Length * learning_rate;
+				this.bias	-= delta_value_ * learning_rate;
 			}
 		}
 		public void learn2( float learning_rate )
 		{
-			var sum_forward_propergated_value = this.forwards
-				.Select( link => link.weight * link.forward.propergated_value )
-				.Sum();
-			
-			foreach( var link in this.forwards )
-			{
-				var modify = link.weight * link.forward.activation;
-				link.weight -= modify * learning_rate;
-			}
+			//var sum_forward_propergated_value = this.forwards
+			//	.Select( link => link.weight * link.forward.propergated_value )
+			//	.Sum();
 
-			if( this.forwards.Length != 0 )
-			{
-				this.propergated_value = sum_forward_propergated_value * d( this.sum_value, this.activation );
-			}
+			//foreach( var link in this.forwards )
+			//{
+			//	var modify = link.weight * link.forward.activation;
+			//	link.weight -= modify * learning_rate;
+			//}
 
-			this.bias -= this.propergated_value * learning_rate;
+			//if( this.forwards.Length != 0 )
+			//{
+			//	this.propergated_value = sum_forward_propergated_value * d( this.sum_value, this.activation );
+			//}
+
+			//this.bias -= this.propergated_value * learning_rate;
 		}
 
 		public void caluclate_delta_value( float correct_value )
@@ -108,7 +107,7 @@ namespace nn
 		}
 		public class Sigmoid : IActivationFunction
 		{
-			float	activation_;
+			public float	activation_;
 
 			public float sum( IEnumerable<(float activation, float weight)> values, float bias )
 			{
@@ -127,7 +126,7 @@ namespace nn
 				this.sum_value_ = values.Select( x => x.activation * x.weight ).Sum() + bias;
 				return this.sum_value_;
 			}
-			public float f( float sum_value ) => (this.sum_value_ = sum_value) > 0.0f ? sum_value : 0.0f;
+			public float f( float sum_value ) => sum_value > 0.0f ? sum_value : 0.0f;
 			public float d() => this.sum_value_ > 0.0f ? 1.0f : 0.0f;
 		}
 		public class Tanh : IActivationFunction
@@ -141,7 +140,6 @@ namespace nn
 			}
 			public float f( float sum_value )
 			{
-				this.sum_value_ = sum_value;
 				var ex = Math.Exp( -2.0d * sum_value );
 				return (float)( ( 1.0d - ex ) / ( 1.0d + ex ) );
 			}
@@ -155,12 +153,16 @@ namespace nn
 		{
 			public int	class_index;
 			float		activation_;
+			static int	seed_ = 0;
+			public SoftMax() => class_index = seed_++ - 1;
 
 			public float sum( IEnumerable<(float activation, float weight)> values, float bias )
 			{
-				return values.Select( x => (float)Math.Exp(x.activation) ).Sum();
+				var max = values.Select( x => x.activation * x.weight ).Max();
+				return values.Select( x => (float)Math.Exp(x.activation * x.weight - max) ).ElementAt(this.class_index)
+					/ values.Select( x => (float)Math.Exp(x.activation * x.weight - max) ).Sum();
 			}
-			public float f( float sum_value ) => throw new NotImplementedException();
+			public float f( float sum_value ) => this.activation_ = sum_value;
 			public float d() => this.activation_ * ( 1.0f - this.activation_ );
 		}
 		public class aaa : IActivationFunction
@@ -251,8 +253,7 @@ namespace nn
 					{
 						activation	= 0.0f,
 						bias		= UnityEngine.Random.value,
-						f = actfunc.f,
-						d = actfunc.d
+						af			= (NeuronUnit.IActivationFunction)Activator.CreateInstance( actfunc.GetType() )
 					}
 					;
 			this.neurons = q.ToArray();
