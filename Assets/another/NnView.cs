@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using nn;
+using N = nn.N<double>;
 
 public class NnView : MonoBehaviour
 {

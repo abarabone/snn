@@ -91,12 +91,12 @@ namespace Neuron
 
 		protected void Awake()
 		{
-			initValues();
+			inifloats();
 
 			return;
 
 
-			void initValues()
+			void inifloats()
 			{
 				this.ParentZone		= this.GetComponentInParent<ZoneBase>();
 				this.nodeRenderer	= this.GetComponent<Renderer>();

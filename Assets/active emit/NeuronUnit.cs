@@ -121,14 +121,14 @@ namespace Neuron.ActiveEmit
 
 		protected void Awake()
 		{
-			initValues();
+			inifloats();
 
 			initLocation();
 
 			return;
 
 
-			void initValues()
+			void inifloats()
 			{
 				this.limit		= 1.0f;//
 				this.volume		= 0.0f;//

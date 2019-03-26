@@ -45,12 +45,12 @@ namespace Neuron.ActiveEmit
 		private void Awake()
 		{
 
-			initValues();
+			inifloats();
 		
 			return;
 
 
-			void initValues()
+			void inifloats()
 			{
 				this.Shape	= this.GetComponent<Collider>();
 			}

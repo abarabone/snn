@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using nn;
+using nn.ActivationFunctions;
 
 public class ActivationFunction : MonoBehaviour
 {
@@ -12,20 +13,18 @@ public class ActivationFunction : MonoBehaviour
 		sigmoid,
 		relu,
 		tanh,
-		softmax,
 		aaa
 	}
 
-	public NeuronUnit.IActivationFunction GetActivationFunction()
+	public IActivationFunction GetActivationFunction()
 	{
 		switch( FunctionType )
 		{
-			case ActivationFunctionType.identity:	return new NeuronUnit.Identity();
-			case ActivationFunctionType.sigmoid:	return new NeuronUnit.Sigmoid();
-			case ActivationFunctionType.relu:		return new NeuronUnit.ReLU();
-			case ActivationFunctionType.tanh:		return new NeuronUnit.Tanh();
-			case ActivationFunctionType.softmax:	return new NeuronUnit.SoftMax();
-			case ActivationFunctionType.aaa:		return new NeuronUnit.aaa();
+			case ActivationFunctionType.identity:	return new Identity();
+			case ActivationFunctionType.sigmoid:	return new Sigmoid();
+			case ActivationFunctionType.relu:		return new ReLU();
+			case ActivationFunctionType.tanh:		return new Tanh();
+			case ActivationFunctionType.aaa:		return new aaa();
 		}
 		return null;
 	}
