@@ -12,16 +12,11 @@ namespace nn
 
 		public interface IActivationFunction
 		{
-			//float sum( IEnumerable<(float activation, float weight)> values, float bias );
 			float f( float sum_value );
 			float d();
 		}
 		public class Identity : IActivationFunction
 		{
-			//public float sum( IEnumerable<(float activation, float weight)> values, float bias )
-			//{
-			//	return values.Select( x => x.activation * x.weight ).Sum() + bias;
-			//}
 			public float f( float sum_value ) => sum_value;
 			public float d() => 1.0f;
 		}
@@ -29,35 +24,20 @@ namespace nn
 		{
 			public float	activation_;
 
-			//public float sum( IEnumerable<(float activation, float weight)> values, float bias )
-			//{
-			//	return values.Select( x => x.activation * x.weight ).Sum() + bias;
-			//}
 			public float f( float sum_value ) => this.activation_ = (float)(1.0d / ( 1.0d + Math.Exp(-sum_value) ));
-			public float d() => this.activation_ * ( 1.0f - this.activation_ );
-			//public float d( float sum_value, float activation_value ) => f(sum_value) * ( 1.0f - f(sum_value) );
+			public float d() => (float)( this.activation_ * ( 1.0d - this.activation_ ) );
 		}
 		public class ReLU : IActivationFunction
 		{
 			float	sum_value_;
 			
-			//public float sum( IEnumerable<(float activation, float weight)> values, float bias )
-			//{
-			//	this.sum_value_ = values.Select( x => x.activation * x.weight ).Sum() + bias;
-			//	return this.sum_value_;
-			//}
 			public float f( float sum_value ) => (this.sum_value_ = sum_value) > 0.0f ? sum_value : 0.0f;
 			public float d() => this.sum_value_ > 0.0f ? 1.0f : 0.0f;
 		}
 		public class Tanh : IActivationFunction
 		{
 			float	sum_value_;
-
-			//public float sum( IEnumerable<(float activation, float weight)> values, float bias )
-			//{
-			//	this.sum_value_ = values.Select( x => x.activation * x.weight ).Sum() + bias;
-			//	return this.sum_value_;
-			//}
+			
 			public float f( float sum_value )
 			{
 				this.sum_value_ = sum_value;
@@ -70,31 +50,10 @@ namespace nn
 				return (float)( 4.0d / ( ee * ee ) );
 			}
 		}
-		//public class SoftMax : IActivationFunction
-		//{
-		//	public int	class_index;
-		//	float		activation_;
-		//	static int	seed_ = 0;
-		//	public SoftMax() => class_index = seed_++ - 1;
-
-		//	public float sum( IEnumerable<(float activation, float weight)> values, float bias )
-		//	{
-		//		var max = values.Select( x => x.activation * x.weight ).Max();
-		//		return values.Select( x => (float)Math.Exp(x.activation * x.weight - max) ).ElementAt(this.class_index)
-		//			/ values.Select( x => (float)Math.Exp(x.activation * x.weight - max) ).Sum();
-		//	}
-		//	public float f( float sum_value ) => this.activation_ = sum_value;
-		//	public float d() => this.activation_ * ( 1.0f - this.activation_ );
-		//}
 		public class aaa : IActivationFunction
 		{
 			float	sum_value_;
-
-			//public float sum( IEnumerable<(float activation, float weight)> values, float bias )
-			//{
-			//	this.sum_value_ = values.Select( x => x.activation * x.weight ).Sum() + bias;
-			//	return this.sum_value_;
-			//}
+			
 			public float f( float sum_value )
 			{
 				this.sum_value_ = sum_value;
@@ -165,10 +124,27 @@ namespace nn
 
 		public interface IOutputFunction
 		{
-			void forward_propergate( IEnumerable<float> activations );
-			void back_propergate(  );
+			void forward_propergate( IEnumerable<NeuronUnit> dst_nodes );
+			void back_propergate( IEnumerable<float> activations, float correct_value );
 		}
 
+		public class SoftMax : IOutputFunction
+		{
+			public void forward_propergate( IEnumerable<NeuronUnit> nodes )
+			{
+				var max		= nodes.Select( node => node.activation ).Max();
+				var exps	= nodes.Select( node => (float)Math.Exp(node.activation - max) );
+				var sum		= exps.Sum();
+				foreach( var (a, node) in Enumerable.Zip(exps, nodes, (x, node) => (x / sum, node)) )
+				{
+					node.activation = a;
+				}
+			}
+			public void back_propergate( IEnumerable<float> activations, float correct_value )
+			{
+				throw new NotImplementedException();
+			}
+		}
 	}
 
 }

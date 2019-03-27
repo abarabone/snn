@@ -20,7 +20,7 @@ namespace nn
 		public float	bias;
 		public float	activation;
 		//public float	sum_value;
-		public float	propergated_value;
+		//public float	propergated_value;
 
 		public IActivationFunction	af;
 
@@ -30,7 +30,6 @@ namespace nn
 				.Sum( link => link.weight * link.back.activation )
 				+ this.bias
 				;
-			//var sum_value = this.af.sum( this.backs.Select( link => (link.back.activation, link.weight) ), this.bias );
 			this.activation = this.af.f( sum_value );
 		}
 
@@ -38,7 +37,7 @@ namespace nn
 		{
 
 			var delta_value = retrieve_delta_from_forwards_();
-			//if( double.IsNaN((double)delta_value) ) delta_value = (float)0.0d;//
+			if( float.IsNaN( delta_value ) ) delta_value = 0.0f;
 
 			modify_to_backs_( delta_value );
 
@@ -87,9 +86,9 @@ namespace nn
 			//this.bias -= this.propergated_value * learning_rate;
 		}
 
-		public void caluclate_delta_value( float correct_value )
+		public void set_loss_delta( float loss_delta )
 		{
-			this.forwards[0].delta_weighted	= this.activation - correct_value;
+			this.forwards[0].delta_weighted	= loss_delta;
 		}
 		
 	}

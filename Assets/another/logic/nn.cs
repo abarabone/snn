@@ -22,6 +22,7 @@ namespace nn
 		{
 			create_layers( neuron_length_per_layers, actfuncs );
 			init_links();
+			opf = new SoftMax();
 		}
 
 		public void create_layers( IEnumerable<int> neuron_length_per_layers, IEnumerable<IActivationFunction> actfuncs )
@@ -40,7 +41,7 @@ namespace nn
 				n.activate();
 			}
 
-			//if( opf != null ) opf.forward_propergate( layers.Last().neurons.Select(node => node.activation) );
+			if( opf != null ) opf.forward_propergate( layers.Last().neurons );
 		}
 		public void propergate_back()
 		{
@@ -68,7 +69,9 @@ namespace nn
 			var q = Enumerable.Zip( correct_values, output_nodes, (c, n) => (c, n) );
 			foreach( var (correct_value, node) in q )
 			{
-				node.caluclate_delta_value( correct_value );
+				var loss_delta = (double)node.activation - correct_value;
+
+				node.set_loss_delta( (float)loss_delta );
 			}
 		}
 		public void set_correct_values_cross_entropy( IEnumerable<float> correct_values )
@@ -77,8 +80,10 @@ namespace nn
 			var q = Enumerable.Zip( correct_values, output_nodes, (c, n) => (c, n) );
 			foreach( var (correct_value, node) in q )
 			{
-				node.forwards[ 0 ].delta_weighted = -( correct_value / node.activation ) + ( 1.0f - correct_value ) / ( 1.0f - node.activation );
-				if( float.IsNaN(node.forwards[ 0 ].delta_weighted) ) node.forwards[ 0 ].delta_weighted = 0.0f;
+				var loss_delta = (float)( -( (double)correct_value / node.activation ) + ( 1.0d - correct_value ) / ( 1.0d - node.activation ) );
+				if( float.IsNaN(loss_delta) ) loss_delta = 0.0f;
+				
+				node.set_loss_delta( loss_delta );
 			}
 		}
 
