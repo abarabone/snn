@@ -30,7 +30,7 @@ namespace nn
 					{
 						activation	= 0.0f,
 						bias		= UnityEngine.Random.value,
-						af			= (IActivationFunction)Activator.CreateInstance( actfunc.GetType() )
+						af			= actfunc != null ? (IActivationFunction)Activator.CreateInstance( actfunc.GetType() ) : null
 					}
 					;
 			this.neurons = q.ToArray();

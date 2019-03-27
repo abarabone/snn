@@ -125,24 +125,30 @@ namespace nn
 		public interface IOutputFunction
 		{
 			void forward_propergate( IEnumerable<NeuronUnit> dst_nodes );
-			void back_propergate( IEnumerable<float> activations, float correct_value );
+			void back_propergate( IEnumerable<NeuronUnit> nodes );
 		}
 
 		public class SoftMax : IOutputFunction
 		{
 			public void forward_propergate( IEnumerable<NeuronUnit> nodes )
 			{
-				var max		= nodes.Select( node => node.activation ).Max();
-				var exps	= nodes.Select( node => (float)Math.Exp(node.activation - max) );
+				var q_acts	= nodes.SelectMany( node => node.backs ).Select( link => link.back.activation );
+				var max		= q_acts.Max();
+				var exps	= q_acts.Select( a => Math.Exp(a - max) );
 				var sum		= exps.Sum();
 				foreach( var (a, node) in Enumerable.Zip(exps, nodes, (x, node) => (x / sum, node)) )
 				{
-					node.activation = a;
+					node.activation = (float)a;
 				}
 			}
-			public void back_propergate( IEnumerable<float> activations, float correct_value )
+			public void back_propergate( IEnumerable<NeuronUnit> nodes )
 			{
-				throw new NotImplementedException();
+				var q_backs		= nodes.SelectMany( node => node.backs );
+				var q_forwards	= nodes.SelectMany( node => node.forwards );
+				foreach( var (back_link, forward_link) in Enumerable.Zip(q_backs, q_forwards, (x,y)=>(x,y)) )
+				{
+					back_link.delta_weighted = forward_link.delta_weighted;
+				}
 			}
 		}
 	}

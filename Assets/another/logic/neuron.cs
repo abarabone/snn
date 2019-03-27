@@ -26,18 +26,21 @@ namespace nn
 
 		public void activate()
 		{
+			if( af == null ) return;
+
 			var sum_value = this.backs
-				.Sum( link => link.weight * link.back.activation )
+				.Sum( link => (double)link.weight * link.back.activation )
 				+ this.bias
 				;
-			this.activation = this.af.f( sum_value );
+			this.activation = this.af.f( (float)sum_value );
 		}
 
 		public void learn( float learning_rate )
 		{
+			if( af == null ) return;
 
 			var delta_value = retrieve_delta_from_forwards_();
-			if( float.IsNaN( delta_value ) ) delta_value = 0.0f;
+			if( double.IsNaN( delta_value ) ) delta_value = 0.0d;
 
 			modify_to_backs_( delta_value );
 
@@ -46,24 +49,24 @@ namespace nn
 
 
 			/// 出力側から重みのかけられたδを取得し、合計する。
-			float retrieve_delta_from_forwards_()
+			double retrieve_delta_from_forwards_()
 			{
 				var sum_delta_forwards = this.forwards
-					.Sum( link => link.delta_weighted )
+					.Sum( link => (double)link.delta_weighted )
 					;
 				return sum_delta_forwards * this.af.d();
 			}
 
 			/// 入力側へδを伝える。
-			void modify_to_backs_( float delta_value_ )
+			void modify_to_backs_( double delta_value_ )
 			{
 				foreach( var link in this.backs )
 				{
-					link.delta_weighted	= link.weight * delta_value_;// 更新前の重みを使用する。
-					link.weight			-= delta_value_ * link.back.activation * learning_rate;
+					link.delta_weighted	=  (float)( link.weight * delta_value_ );// 更新前の重みを使用する。
+					link.weight			-= (float)( delta_value_ * link.back.activation * learning_rate );
 					//Debug.Log( $"w:{link.weight} b:{this.bias} {link.GetHashCode()}" );
 				}
-				this.bias	-= delta_value_ * learning_rate;
+				this.bias	-= (float)( delta_value_ * learning_rate );
 			}
 		}
 		public void learn2( float learning_rate )

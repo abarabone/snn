@@ -22,6 +22,7 @@ namespace nn
 		{
 			create_layers( neuron_length_per_layers, actfuncs );
 			init_links();
+			add_softmax_layer();
 			opf = new SoftMax();
 		}
 
@@ -32,10 +33,31 @@ namespace nn
 				.ToArray()
 				;
 		}
+		public void add_softmax_layer()
+		{
+			var softmax_layer = new LayerUnit( this.layers.Last().neurons.Length, actfunc:null );
+
+			var q = Enumerable.Zip( this.layers.Last().neurons, softmax_layer.neurons, (x,y)=>(x,y) );
+			foreach( var (prev_node, last_node) in q )
+			{
+				prev_node.forwards[0].forward = last_node;
+				last_node.backs		= new NeuronLinkUnit [] { prev_node.forwards[0] };
+
+				var new_last_link	= new NeuronLinkUnit();
+				new_last_link.back	= last_node;
+				new_last_link.weight= 1.0f;
+				last_node.forwards	= new NeuronLinkUnit [] { new_last_link };
+			}
+
+			this.layers = this.layers
+				.Concat( new LayerUnit [] { softmax_layer } )
+				.ToArray()
+				;
+		}
 
 		public void propergate_forward()
 		{
-			foreach( var n in layers.Skip( 1 ).SelectMany( layer => layer.neurons ) )
+			foreach( var n in layers.Skip(1).SelectMany( layer => layer.neurons ) )
 			//foreach( var n in from layer in this.layers from n in layer.neurons select n )
 			{
 				n.activate();
@@ -45,7 +67,7 @@ namespace nn
 		}
 		public void propergate_back()
 		{
-			//if( opf != null ) opf.back_propergate( layers.Last().neurons.Select(node => node.activation) );
+			if( opf != null ) opf.back_propergate( layers.Last().neurons );
 
 			foreach( var n in layers.Skip(1).Reverse<LayerUnit>().SelectMany( layer => layer.neurons ) )
 			//foreach( var n in from layer in this.layers.Reverse<LayerUnit>() from n in layer.neurons select n )
