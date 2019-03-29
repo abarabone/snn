@@ -132,22 +132,21 @@ namespace nn
 		{
 			public void forward_propergate( IEnumerable<NeuronUnit> nodes )
 			{
-				var q_acts	= nodes.SelectMany( node => node.backs ).Select( link => link.back.activation );
+				var q_acts	= nodes.Select( node => node.backs[0].back.activation );
 				var max		= q_acts.Max();
 				var exps	= q_acts.Select( a => Math.Exp(a - max) );
 				var sum		= exps.Sum();
-				foreach( var (a, node) in Enumerable.Zip(exps, nodes, (x, node) => (x / sum, node)) )
+				var q		= Enumerable.Zip( exps, nodes, (x, node) => (x / sum, node) );
+				foreach( var (a, node) in q )
 				{
 					node.activation = (float)a;
 				}
 			}
 			public void back_propergate( IEnumerable<NeuronUnit> nodes )
 			{
-				var q_backs		= nodes.SelectMany( node => node.backs );
-				var q_forwards	= nodes.SelectMany( node => node.forwards );
-				foreach( var (back_link, forward_link) in Enumerable.Zip(q_backs, q_forwards, (x,y)=>(x,y)) )
+				foreach( var node in nodes )
 				{
-					back_link.delta_weighted = forward_link.delta_weighted;
+					node.backs[0].delta_weighted = node.forwards[0].delta_weighted;
 				}
 			}
 		}

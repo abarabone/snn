@@ -22,8 +22,8 @@ namespace nn
 		{
 			create_layers( neuron_length_per_layers, actfuncs );
 			init_links();
-			add_softmax_layer();
-			opf = new SoftMax();
+			//add_softmax_layer();
+			//opf = new SoftMax();
 		}
 
 		public void create_layers( IEnumerable<int> neuron_length_per_layers, IEnumerable<IActivationFunction> actfuncs )
@@ -41,11 +41,14 @@ namespace nn
 			foreach( var (prev_node, last_node) in q )
 			{
 				prev_node.forwards[0].forward = last_node;
-				last_node.backs		= new NeuronLinkUnit [] { prev_node.forwards[0] };
 
-				var new_last_link	= new NeuronLinkUnit();
-				new_last_link.back	= last_node;
-				new_last_link.weight= 1.0f;
+				var new_last_link	= new NeuronLinkUnit()
+				{
+					back	= last_node,
+					forward	= null,
+					weight	= 1.0f
+				};
+				last_node.backs		= new NeuronLinkUnit [] { prev_node.forwards[0] };
 				last_node.forwards	= new NeuronLinkUnit [] { new_last_link };
 			}
 
@@ -76,7 +79,7 @@ namespace nn
 			}
 		}
 
-		public void set_input_values( float[] input_values )
+		public void set_input_values( IEnumerable<float> input_values )
 		{
 			var input_nodes = this.layers.First().neurons;
 			var q = Enumerable.Zip( input_values, input_nodes, (v, n) => (v, n) );
@@ -91,9 +94,9 @@ namespace nn
 			var q = Enumerable.Zip( correct_values, output_nodes, (c, n) => (c, n) );
 			foreach( var (correct_value, node) in q )
 			{
-				var loss_delta = (double)node.activation - correct_value;
+				var loss_delta = node.activation - correct_value;
 
-				node.set_loss_delta( (float)loss_delta );
+				node.set_loss_delta( loss_delta );
 			}
 		}
 		public void set_correct_values_cross_entropy( IEnumerable<float> correct_values )

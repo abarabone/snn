@@ -102,22 +102,27 @@ public class NnView : MonoBehaviour
 
 		foreach( var i in Enumerable.Range(0, freq) )
 		{
-			var rnds = make_random_values_( this.value.layers.First().neurons.Length );
+			var rnds = make_random_values_( this.value.layers.First().neurons.Length ).ToArray();
 			this.value.set_input_values( rnds );
 			this.value.propergate_forward();
+			//Debug.Log(
+			//	this.value.layers.First().neurons.Select( x => x.activation.ToString() ).Aggregate( ( x, y ) => x + " " + y )
+			//	+ " / " +
+			//	Enumerable.Range( 1, rnds.Count() ).Select( x => x == (int)rnds.Sum() ? 1.0f : 0.0f ).Select( x => x.ToString() ).Aggregate( ( x, y ) => x + " " + y )
+			//);
 
 			//Debug.Log( $"{rnds.Sum()} {this.value.layers.Last().neurons.First().activation}" );
 			//this.value.set_correct_values_cross_entropy( rnds );
 			//this.value.set_correct_values( rnds );
 			//this.value.set_correct_values( new[] { rnds.Sum() >= rnds.Length * 0.5f ? 1.0f : 0.0f } );
-			this.value.set_correct_values( Enumerable.Range( 1, rnds.Length ).Select( x => x > 1 ? 0.0f : 1.0f ) );
+			this.value.set_correct_values_cross_entropy( Enumerable.Range( 1, rnds.Count() ).Select( x => x == (int)rnds.Sum() ? 1.0f : 0.0f ) );
 			this.value.propergate_back();
 		}
 		return;
 
-		float[] make_random_values_( int length )
+		IEnumerable<float> make_random_values_( int length )
 		{
-			return Enumerable.Range(0, length).Select( i => Random.value >= 0.5f ? 1.0f : 0.0f ).ToArray();
+			return Enumerable.Range(0, length).Select( i => Random.value >= 0.5f ? 1.0f : 0.0f );
 		}
 	}
 }
