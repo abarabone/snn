@@ -8,7 +8,7 @@ namespace nn
 {
 	using ActivationFunctions;
 	using OutputProcessFunctions;
-
+	using LossFunctions;
 
 	//[Serializable]
 	public class N
@@ -16,14 +16,27 @@ namespace nn
 		public LayerUnit[]	layers;
 		public float		learning_rate;
 
-		public IOutputFunction	opf;
+		public IOutputFunction	output_layer_func;
+		public ILossFunction	loss_func;
 
-		public N( IEnumerable<int> neuron_length_per_layers, IEnumerable<IActivationFunction> actfuncs )
+		public N(
+			IEnumerable<int> neuron_length_per_layers,
+			IEnumerable<IActivationFunction> actfuncs,
+			IOutputFunction	output_layer_function,
+			ILossFunction	loss_function
+		)
 		{
 			create_layers( neuron_length_per_layers, actfuncs );
 			init_links();
-			//add_softmax_layer();
-			//opf = new SoftMax();
+			//foreach( var n in this.layers.Take( this.layers.Length - 1 ).SelectMany( l => l.neurons ) )
+			//{
+			//	n.sign = UnityEngine.Random.value > 0.3f ? 1.0f : -1.0f;
+			//}
+
+			this.loss_func = loss_function;
+			this.output_layer_func = output_layer_function;
+			
+			if( output_layer_function is SoftMax ) add_softmax_layer();
 		}
 
 		public void create_layers( IEnumerable<int> neuron_length_per_layers, IEnumerable<IActivationFunction> actfuncs )
@@ -65,12 +78,12 @@ namespace nn
 			{
 				n.activate();
 			}
-
-			if( opf != null ) opf.forward_propergate( layers.Last().neurons );
+			
+			output_layer_func.forward_propergate( layers.Last().neurons );
 		}
 		public void propergate_back()
 		{
-			if( opf != null ) opf.back_propergate( layers.Last().neurons );
+			output_layer_func.back_propergate( layers.Last().neurons );
 
 			foreach( var n in layers.Skip(1).Reverse<LayerUnit>().SelectMany( layer => layer.neurons ) )
 			//foreach( var n in from layer in this.layers.Reverse<LayerUnit>() from n in layer.neurons select n )
@@ -94,21 +107,7 @@ namespace nn
 			var q = Enumerable.Zip( correct_values, output_nodes, (c, n) => (c, n) );
 			foreach( var (correct_value, node) in q )
 			{
-				var loss_delta = node.activation - correct_value;
-
-				node.set_loss_delta( loss_delta );
-			}
-		}
-		public void set_correct_values_cross_entropy( IEnumerable<float> correct_values )
-		{
-			var output_nodes = this.layers.Last().neurons;
-			var q = Enumerable.Zip( correct_values, output_nodes, (c, n) => (c, n) );
-			foreach( var (correct_value, node) in q )
-			{
-				var loss_delta = (float)( -( (double)correct_value / node.activation ) + ( 1.0d - correct_value ) / ( 1.0d - node.activation ) );
-				if( float.IsNaN(loss_delta) ) loss_delta = 0.0f;
-				
-				node.set_loss_delta( loss_delta );
+				node.set_loss_delta( loss_func.d(node.activation, correct_value) );
 			}
 		}
 

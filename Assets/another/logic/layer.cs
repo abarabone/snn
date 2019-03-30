@@ -28,6 +28,7 @@ namespace nn
 			var q = from i in Enumerable.Range( 0, length )
 					select new NeuronUnit
 					{
+						sign = 1.0f,
 						activation	= 0.0f,
 						bias		= UnityEngine.Random.value,
 						af			= actfunc != null ? (IActivationFunction)Activator.CreateInstance( actfunc.GetType() ) : null

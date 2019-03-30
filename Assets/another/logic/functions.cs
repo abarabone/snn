@@ -70,54 +70,45 @@ namespace nn
 		}
 
 	}
-	
-	//namespace LossFunctions
-	//{
 
-	//	public interface ILossFunction
-	//	{
-	//		float a( IEnumerable<float> activations, float bias, IActivationFunction activation_function );
-	//		float f( IEnumerable<float> input_values, IEnumerable<float> correct_values );
-	//		float d( );
-	//	}
-	//	public class MSE : ILossFunction
-	//	{
-	//		public float d()
-	//		{
-	//			throw new NotImplementedException();
-	//		}
-	//		public float f( IEnumerable<float> input_values, IEnumerable<float> correct_values )
-	//		{
-	//			throw new NotImplementedException();
-	//		}
-	//		public float a( IEnumerable<float> activations, float bias, IActivationFunction activation_function )
-	//		{
-	//			return activation_function.f( activations.Sum() + bias );
-	//		}
-	//	}
-	//	public class CrossEntropy : ILossFunction
-	//	{
-	//		public float d()
-	//		{
-	//			throw new NotImplementedException();
-	//		}
-	//		public float f( IEnumerable<float> input_values, IEnumerable<float> correct_values )
-	//		{
-	//			throw new NotImplementedException();
-	//		}
-	//		public float a( IEnumerable<float> activations, float bias, IActivationFunction activation_function )
-	//		{
-	//			switch( activation_function )
-	//			{
-	//				case ActivationFunctions.Sigmoid	af:break;
-	//				case SoftMax	af:break;
-	//				case var		af:				return activation_function.f( activations.Sum() + bias );
-	//			}
-	//			return activations.Sum() + bias;
-	//		}
-	//	}
-		
-	//}
+	namespace LossFunctions
+	{
+
+		public interface ILossFunction
+		{
+			float f( IEnumerable<float> input_values, IEnumerable<float> correct_values );
+			float d( float activation_value, float correct_value );
+		}
+		public class MSE : ILossFunction
+		{
+			public float f( IEnumerable<float> input_values, IEnumerable<float> correct_values )
+			{
+				throw new NotImplementedException();
+			}
+			public float d( float activation_value, float correct_value )
+			{
+				return activation_value - correct_value;
+			}
+		}
+		public class CrossEntropy : ILossFunction
+		{
+			public float f( IEnumerable<float> input_values, IEnumerable<float> correct_values )
+			{
+				throw new NotImplementedException();
+			}
+			public float d( float activation_value, float correct_value )
+			{
+				var loss_delta =
+					-( (double)correct_value / activation_value )
+					+ ( 1.0d - correct_value ) / ( 1.0d - activation_value );
+				
+				if( double.IsNaN(loss_delta) ) loss_delta = 0.0f;
+				
+				return (float)loss_delta;
+			}
+		}
+
+	}
 
 	namespace OutputProcessFunctions
 	{
@@ -126,6 +117,14 @@ namespace nn
 		{
 			void forward_propergate( IEnumerable<NeuronUnit> dst_nodes );
 			void back_propergate( IEnumerable<NeuronUnit> nodes );
+		}
+
+		public class StabOutput : IOutputFunction
+		{
+			public void back_propergate( IEnumerable<NeuronUnit> nodes )
+			{}
+			public void forward_propergate( IEnumerable<NeuronUnit> dst_nodes )
+			{}
 		}
 
 		public class SoftMax : IOutputFunction

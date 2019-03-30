@@ -21,8 +21,10 @@ namespace nn
 		public float	activation;
 		//public float	sum_value;
 		//public float	propergated_value;
-
+		
 		public IActivationFunction	af;
+
+		public float	sign;
 
 		public void activate()
 		{
@@ -32,7 +34,7 @@ namespace nn
 				.Sum( link => (double)link.weight * link.back.activation )
 				+ this.bias
 				;
-			this.activation = this.af.f( (float)sum_value );
+			this.activation = this.af.f( (float)sum_value ) * this.sign;
 		}
 
 		public void learn( float learning_rate )
@@ -63,10 +65,10 @@ namespace nn
 				foreach( var link in this.backs )
 				{
 					link.delta_weighted	=  (float)( link.weight * delta_value_ );// 更新前の重みを使用する。
-					link.weight			-= (float)( delta_value_ * link.back.activation * learning_rate );
+					link.weight			-= (float)( delta_value_ * link.back.activation * learning_rate ) * this.sign;
 					//Debug.Log( $"w:{link.weight} b:{this.bias} {link.GetHashCode()}" );
 				}
-				this.bias	-= (float)( delta_value_ * learning_rate );
+				this.bias	-= (float)( delta_value_ * learning_rate ) * this.sign;
 			}
 		}
 		public void learn2( float learning_rate )

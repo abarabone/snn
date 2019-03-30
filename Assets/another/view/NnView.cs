@@ -23,6 +23,9 @@ public class NnView : MonoBehaviour
 	public int		learnFreq;
 	public float	learningRate;
 
+	public bool	IsUseSoftMax;
+	public bool	IsUseCrossEntropy;
+
 	void Awake()
 	{
 		var tf	= transform;
@@ -35,7 +38,16 @@ public class NnView : MonoBehaviour
 		
 		void create_nn_view_()
 		{
-			this.value	= new N( this.NeuronLengthPerLayers, funcs.Select( x => x.GetActivationFunction() ) );
+
+			this.value	= new N(
+				this.NeuronLengthPerLayers, funcs.Select( x => x.GetActivationFunction() ),
+				this.IsUseSoftMax ?
+					(nn.OutputProcessFunctions.IOutputFunction)new nn.OutputProcessFunctions.SoftMax() :
+					(nn.OutputProcessFunctions.IOutputFunction)new nn.OutputProcessFunctions.StabOutput(),
+				this.IsUseCrossEntropy ?
+					(nn.LossFunctions.ILossFunction)new nn.LossFunctions.CrossEntropy() :
+					(nn.LossFunctions.ILossFunction)new nn.LossFunctions.MSE()
+			);
 		}
 
 		void create_node_views_()
@@ -56,6 +68,7 @@ public class NnView : MonoBehaviour
 				n.view.Init( n.value );
 				ntf.SetParent( tf, worldPositionStays:true );
 				n.view.name = $"{ntf.position.z / this.LayerViewDistance} : {ntf.position.y / this.NodeViewDistance}";
+				n.view.name += n.value.sign > 0.0f ? "" : " n";//
 			}
 		}
         
@@ -112,17 +125,16 @@ public class NnView : MonoBehaviour
 			//);
 
 			//Debug.Log( $"{rnds.Sum()} {this.value.layers.Last().neurons.First().activation}" );
-			//this.value.set_correct_values_cross_entropy( rnds );
 			//this.value.set_correct_values( rnds );
 			//this.value.set_correct_values( new[] { rnds.Sum() >= rnds.Length * 0.5f ? 1.0f : 0.0f } );
-			this.value.set_correct_values_cross_entropy( Enumerable.Range( 1, rnds.Count() ).Select( x => x == (int)rnds.Sum() ? 1.0f : 0.0f ) );
+			this.value.set_correct_values( Enumerable.Range( 1, rnds.Count() ).Select( x => x == (int)rnds.Sum() ? 1.0f : 0.0f ) );
 			this.value.propergate_back();
 		}
 		return;
 
 		IEnumerable<float> make_random_values_( int length )
 		{
-			return Enumerable.Range(0, length).Select( i => Random.value >= 0.5f ? 1.0f : 0.0f );
+			return Enumerable.Range(0, length).Select( _ => Random.value >= 0.5f ? 1.0f : 0.0f );
 		}
 	}
 }
