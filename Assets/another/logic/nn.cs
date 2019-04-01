@@ -84,7 +84,8 @@ namespace nn
 		public void propergate_back()
 		{
 			output_layer_func.back_propergate( layers.Last().neurons );
-
+			foreach( var n in layers.Last().neurons ) Debug.Log( n.backs[ 0 ].delta_weighted );
+			foreach( var n in layers.Take(layers.Length-1).Last().neurons ) Debug.Log( n.forwards[ 0 ].delta_weighted );
 			foreach( var n in layers.Skip(1).Reverse<LayerUnit>().SelectMany( layer => layer.neurons ) )
 			//foreach( var n in from layer in this.layers.Reverse<LayerUnit>() from n in layer.neurons select n )
 			{

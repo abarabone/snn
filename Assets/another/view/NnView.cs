@@ -118,18 +118,22 @@ public class NnView : MonoBehaviour
 			var rnds = make_random_values_( this.value.layers.First().neurons.Length ).ToArray();
 			this.value.set_input_values( rnds );
 			this.value.propergate_forward();
-			//Debug.Log(
-			//	this.value.layers.First().neurons.Select( x => x.activation.ToString() ).Aggregate( ( x, y ) => x + " " + y )
-			//	+ " / " +
-			//	Enumerable.Range( 1, rnds.Count() ).Select( x => x == (int)rnds.Sum() ? 1.0f : 0.0f ).Select( x => x.ToString() ).Aggregate( ( x, y ) => x + " " + y )
-			//);
 
-			//Debug.Log( $"{rnds.Sum()} {this.value.layers.Last().neurons.First().activation}" );
-			//this.value.set_correct_values( rnds );
-			//this.value.set_correct_values( new[] { rnds.Sum() >= rnds.Length * 0.5f ? 1.0f : 0.0f } );
-			this.value.set_correct_values( Enumerable.Range( 1, rnds.Count() ).Select( x => x == (int)rnds.Sum() ? 1.0f : 0.0f ) );
+			var ts = Enumerable.Range( 1, rnds.Count() ).Select( x => x == (int)(rnds.Sum(xx=>xx+0.1f)) ? 1.0f : 0.0f );
+			//var ts = rnds;
+			//var ts = new[] { rnds.Sum() >= rnds.Length * 0.5f ? 1.0f : 0.0f };
+			this.value.set_correct_values( ts );
 			this.value.propergate_back();
+			//Debug.Log( $"{string.Join(" ",rnds)} / {string.Join(" ",ts)}" );
 		}
+		//for( var i=0; i<100; i++ )
+		//{
+		//	this.value.set_input_values( Enumerable.Repeat(1.0f, this.value.layers.First().neurons.Length) );
+		//	this.value.propergate_forward();
+		//	var ts = Enumerable.Range(1,10).Select( x => x == 10 ? 1.0f : 0.0f );
+		//	this.value.set_correct_values( ts );
+		//	this.value.propergate_back();
+		//}
 		return;
 
 		IEnumerable<float> make_random_values_( int length )

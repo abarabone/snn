@@ -143,9 +143,10 @@ namespace nn
 			}
 			public void back_propergate( IEnumerable<NeuronUnit> nodes )
 			{
-				foreach( var node in nodes )
+				foreach( var (back_link, forward_link) in nodes.Select( node => (node.backs[0], node.forwards[0]) ) )
 				{
-					node.backs[0].delta_weighted = node.forwards[0].delta_weighted;
+					//Debug.Log( $"{forward_link.delta_weighted} {back_link.back.activation} {back_link.forward.activation}" );
+					back_link.delta_weighted = forward_link.delta_weighted;
 				}
 			}
 		}
