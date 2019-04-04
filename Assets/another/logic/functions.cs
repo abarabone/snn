@@ -68,6 +68,20 @@ namespace nn
 				return 0.0f;
 			}
 		}
+		public class StepWide : IActivationFunction
+		{
+			float	sum_value_;
+			
+			public float f( float sum_value )
+			{
+				this.sum_value_ = sum_value;
+				return Math.Sign(sum_value);
+			}
+			public float d()
+			{
+				return Math.Sign(this.sum_value_);
+			}
+		}
 
 	}
 
@@ -146,7 +160,7 @@ namespace nn
 				foreach( var (back_link, forward_link) in nodes.Select( node => (node.backs[0], node.forwards[0]) ) )
 				{
 					//Debug.Log( $"{forward_link.delta_weighted} {back_link.back.activation} {back_link.forward.activation}" );
-					back_link.delta_weighted = forward_link.delta_weighted;
+					back_link.delta_weighted = forward_link.delta_weighted * back_link.back.activation;
 				}
 			}
 		}

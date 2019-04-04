@@ -119,9 +119,10 @@ public class NnView : MonoBehaviour
 			this.value.set_input_values( rnds );
 			this.value.propergate_forward();
 
-			var ts = Enumerable.Range( 1, rnds.Count() ).Select( x => x == (int)(rnds.Sum(xx=>xx+0.1f)) ? 1.0f : 0.0f );
-			//var ts = rnds;
+			//var ts = Enumerable.Range( 1, rnds.Count() ).Select( x => x == (int)(rnds.Sum(xx=>xx+0.1f)) ? 1.0f : 0.0f );
+			var ts = rnds;
 			//var ts = new[] { rnds.Sum() >= rnds.Length * 0.5f ? 1.0f : 0.0f };
+			//var ts = new[] { rnds.Sum() >= rnds.Length * 0.5f ? 1.0f : -1.0f };
 			this.value.set_correct_values( ts );
 			this.value.propergate_back();
 			//Debug.Log( $"{string.Join(" ",rnds)} / {string.Join(" ",ts)}" );

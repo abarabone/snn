@@ -13,7 +13,8 @@ public class ActivationFunction : MonoBehaviour
 		sigmoid,
 		relu,
 		tanh,
-		aaa
+		aaa,
+		stepwide,
 	}
 
 	public IActivationFunction GetActivationFunction()
@@ -25,6 +26,7 @@ public class ActivationFunction : MonoBehaviour
 			case ActivationFunctionType.relu:		return new ReLU();
 			case ActivationFunctionType.tanh:		return new Tanh();
 			case ActivationFunctionType.aaa:		return new aaa();
+			case ActivationFunctionType.stepwide:	return new StepWide();
 		}
 		return null;
 	}
